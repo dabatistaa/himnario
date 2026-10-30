@@ -9,7 +9,7 @@ let stopped = false
 const RELAY_WS = (import.meta.env.VITE_RELAY_URL ?? 'wss://himnario-relay.dabatistaa.workers.dev')
   .replace(/^http/, 'ws')
 
-const SALA_CHARS = 'abcdefghjkmnpqrstvwxyz23456789'
+const SALA_CHARS = 'ABCDEFGHJKMNPQRSTVWXYZ23456789'
 const SALA_KEY = 'himnario-sala'
 
 function generateSala(): string {
