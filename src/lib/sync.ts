@@ -1,4 +1,5 @@
 import type { HymnaryId, SyncState } from '../types'
+import { getSala, initRelay, isRelayConnected, onRelayMessage, relaySend } from './relay'
 
 const CHANNEL_NAME = 'himnario-smi'
 
@@ -18,38 +19,54 @@ export const DEFAULT_STATE: SyncState = {
   hymnary: 'smi',
 }
 
+// ── BroadcastChannel (mismo navegador) ──────────────────────────────────────
 let channel: BroadcastChannel | null = null
-
 function getChannel(): BroadcastChannel {
   if (!channel) channel = new BroadcastChannel(CHANNEL_NAME)
   return channel
 }
 
+// ── Relay WebSocket (cross-device / OBS) ────────────────────────────────────
+let relayReady = false
+function ensureRelay() {
+  if (relayReady) return
+  relayReady = true
+  const sala = getSala()
+  if (sala) initRelay(sala)
+}
+
+function usesRelay(): boolean { return !!getSala() }
+
+// ── Flat message shape ───────────────────────────────────────────────────────
+function flatState(s: SyncState) {
+  return {
+    num: s.num, idx: s.idx, blank: s.blank, scale: s.scale,
+    theme: s.settings.theme, repeatChorus: s.settings.repeatChorus,
+    showTitle: s.settings.showTitle, showLabel: s.settings.showLabel,
+    hymnary: s.hymnary,
+  }
+}
+
+// ── Public API ───────────────────────────────────────────────────────────────
 export function broadcastState(state: SyncState) {
-  try {
-    getChannel().postMessage({
-      type: 'state',
-      num: state.num,
-      idx: state.idx,
-      blank: state.blank,
-      scale: state.scale,
-      theme: state.settings.theme,
-      repeatChorus: state.settings.repeatChorus,
-      showTitle: state.settings.showTitle,
-      showLabel: state.settings.showLabel,
-      hymnary: state.hymnary,
-    })
-  } catch (_) {}
+  ensureRelay()
+  const msg = { type: 'state', ...flatState(state) }
+  if (usesRelay()) relaySend(msg)
+  else try { getChannel().postMessage(msg) } catch (_) {}
 }
 
 export function broadcastHello() {
-  try { getChannel().postMessage({ type: 'hello' }) } catch (_) {}
+  ensureRelay()
+  const msg = { type: 'hello' }
+  if (usesRelay()) relaySend(msg)
+  else try { getChannel().postMessage(msg) } catch (_) {}
 }
 
 export function broadcastCmd(action: 'next' | 'prev' | 'first' | 'blank' | 'goto', num?: number) {
-  try {
-    getChannel().postMessage(Object.assign({ type: 'cmd', action }, num != null ? { num } : {}))
-  } catch (_) {}
+  ensureRelay()
+  const msg = Object.assign({ type: 'cmd', action }, num != null ? { num } : {})
+  if (usesRelay()) relaySend(msg)
+  else try { getChannel().postMessage(msg) } catch (_) {}
 }
 
 type StateMsg = { type: 'state'; num: number; idx: number; blank: boolean; scale: number; theme: string; repeatChorus: boolean; showTitle: boolean; showLabel: boolean; hymnary: HymnaryId }
@@ -58,22 +75,23 @@ type CmdMsg = { type: 'cmd'; action: string; num?: number }
 type Msg = StateMsg | HelloMsg | CmdMsg
 
 export function onMessage(handler: (msg: Msg) => void): () => void {
+  ensureRelay()
+  if (usesRelay()) {
+    return onRelayMessage(msg => handler(msg as Msg))
+  }
   const ch = getChannel()
   const listener = (e: MessageEvent<Msg>) => handler(e.data)
   ch.addEventListener('message', listener)
   return () => ch.removeEventListener('message', listener)
 }
 
+export { isRelayConnected, getSala }
+
+// ── Persistence ─────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'himnario-smi:operador'
 
 export function loadPersistedState(): { num?: number; idx?: number; scale?: number; hymnary?: HymnaryId } {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return {}
-    return JSON.parse(raw) as { num?: number; idx?: number; scale?: number; hymnary?: HymnaryId }
-  } catch {
-    return {}
-  }
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') } catch { return {} }
 }
 
 export function persistState(s: { num: number; idx: number; scale: number; hymnary: HymnaryId }) {

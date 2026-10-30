@@ -3,7 +3,7 @@ import { Stage } from '../components/Stage'
 import { useKeyboard } from '../hooks/useKeyboard'
 import { buildSlides } from '../lib/slides'
 import { searchHymns } from '../lib/search'
-import { broadcastState, DEFAULT_SETTINGS, loadPersistedState, onMessage, persistState } from '../lib/sync'
+import { broadcastState, DEFAULT_SETTINGS, loadPersistedState, onMessage, persistState, isRelayConnected, getSala } from '../lib/sync'
 import type { Hymn, HymnaryId, ProjectionTheme, Settings, Slide } from '../types'
 
 interface OperatorPageProps {
@@ -30,6 +30,7 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
   const [scale, setScale] = useState(persisted.scale ?? 1.0)
   const [settings, setSettings] = useState<Settings>({ ...DEFAULT_SETTINGS })
   const [projLastSeen, setProjLastSeen] = useState<number | null>(null)
+  const [relayConnected, setRelayConnected] = useState(false)
 
   const [searchQuery, setSearchQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
@@ -70,7 +71,10 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
   }, [sendState, slides.length])
 
   useEffect(() => {
-    const t = setInterval(() => setProjLastSeen(p => p), 3000)
+    const t = setInterval(() => {
+      setProjLastSeen(p => p)
+      setRelayConnected(isRelayConnected())
+    }, 1000)
     return () => clearInterval(t)
   }, [])
 
@@ -142,7 +146,9 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
   }, [searchQuery, hymns])
 
   const openProjector = () => {
-    window.open('/proyector', 'proyector', 'popup=1,width=1280,height=720,menubar=no,toolbar=no,location=no,status=no')
+    const sala = getSala()
+    const q = sala ? `?sala=${encodeURIComponent(sala)}` : ''
+    window.open(`/proyector${q}`, 'proyector', 'popup=1,width=1280,height=720,menubar=no,toolbar=no,location=no,status=no')
   }
 
   const hymnIndex = hymns.findIndex(h => h.number === hymnNum)
@@ -193,6 +199,16 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: projConnected ? '#5BD18B' : '#6B7180' }} />
             {projConnected ? 'Proyector conectado' : 'Proyector sin abrir'}
           </span>
+          {getSala() && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12,
+              padding: '4px 10px', borderRadius: 999, border: '1px solid #333844',
+              color: relayConnected ? '#CDEFD9' : '#9AA0AC',
+            }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: relayConnected ? '#5BD18B' : '#6B7180' }} />
+              {relayConnected ? `Relay · ${getSala()}` : 'Relay conectando…'}
+            </span>
+          )}
         </div>
 
         {/* Buscador */}
