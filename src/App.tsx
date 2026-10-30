@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { useHymns } from './hooks/useHymns'
 import { OperatorPage } from './pages/Operator'
 import { ProjectorPage } from './pages/Projector'
+import { GuiaPage } from './pages/Guia'
 import type { Hymn, HymnSection } from './types'
 
 function normalizeSmi(raw: unknown): Hymn[] {
@@ -50,6 +51,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<OperatorPage hymnsSmi={hymnsSmi} hymnsJuvenil={hymnsJuvenil} />} />
         <Route path="/proyector" element={<ProjectorPage hymnsSmi={hymnsSmi} hymnsJuvenil={hymnsJuvenil} />} />
+        <Route path="/guia" element={<GuiaPage />} />
       </Routes>
     </BrowserRouter>
   )
