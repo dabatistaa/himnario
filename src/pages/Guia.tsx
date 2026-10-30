@@ -141,7 +141,7 @@ export function GuiaPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <StepCard n={1} title="Agrega el panel operador como dock">
               <p style={{ margin: '0 0 10px', color: '#9AA0AC', fontSize: 14, lineHeight: 1.6 }}>
-                En OBS: <strong style={{ color: '#E7E8EC' }}>View → Docks → Custom Browser Docks</strong>
+                En OBS: <strong style={{ color: '#E7E8EC' }}>Ver → Paneles → Paneles de navegador personalizados</strong>
               </p>
               <Code value={`${APP}/?sala=${SALA}`} label="Dock Name: Himnario  ·  URL:" />
               <p style={{ margin: '10px 0 0', color: '#9AA0AC', fontSize: 13 }}>El operador aparece como panel dentro de OBS — buscas y cambias himnos sin salir.</p>
