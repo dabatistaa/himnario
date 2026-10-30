@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
-const SALA = 'smi'
 const RELAY = 'https://himnario-relay.dabatistaa.workers.dev'
 const APP = 'https://himnario.impartela.org'
+const SALA = new URLSearchParams(window.location.search).get('sala') ?? 'tu-sala'
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
@@ -103,7 +103,7 @@ export function GuiaPage() {
           <h1 style={{ margin: '16px 0 8px', fontSize: 32, fontWeight: 700 }}>Guía de uso</h1>
           <p style={{ margin: 0, color: '#9AA0AC', fontSize: 16, lineHeight: 1.6 }}>
             Cómo usar el Himnario SMI con OBS Studio y Stream Deck.
-            Tu código de sala es <code style={{ color: '#E3B260', background: '#1A1D24', padding: '2px 8px', borderRadius: 6 }}>{SALA}</code>.
+            Tu código de sala es <code style={{ color: '#E3B260', background: '#1A1D24', padding: '2px 8px', borderRadius: 6 }}>{SALA}</code> — todas las URLs ya están pre-configuradas con tu sala.
           </p>
         </div>
 

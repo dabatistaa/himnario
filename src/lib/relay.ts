@@ -9,8 +9,37 @@ let stopped = false
 const RELAY_WS = (import.meta.env.VITE_RELAY_URL ?? 'wss://himnario-relay.dabatistaa.workers.dev')
   .replace(/^http/, 'ws')
 
+const SALA_CHARS = 'abcdefghjkmnpqrstvwxyz23456789'
+const SALA_KEY = 'himnario-sala'
+
+function generateSala(): string {
+  return Array.from({ length: 6 }, () => SALA_CHARS[Math.floor(Math.random() * SALA_CHARS.length)]).join('')
+}
+
 export function getSala(): string | null {
-  try { return new URLSearchParams(window.location.search).get('sala') } catch { return null }
+  try {
+    const url = new URL(window.location.href)
+    const urlSala = url.searchParams.get('sala')
+
+    // En el proyector solo se usa el param de URL (no auto-generar)
+    if (window.location.pathname.startsWith('/proyector')) return urlSala
+
+    // En el operador: URL param tiene prioridad
+    if (urlSala) {
+      localStorage.setItem(SALA_KEY, urlSala)
+      return urlSala
+    }
+
+    // Recuperar o generar sala
+    let sala = localStorage.getItem(SALA_KEY)
+    if (!sala) sala = generateSala()
+    localStorage.setItem(SALA_KEY, sala)
+
+    // Actualizar URL sin recargar
+    url.searchParams.set('sala', sala)
+    window.history.replaceState({}, '', url.toString())
+    return sala
+  } catch { return null }
 }
 
 export function initRelay(sala: string) {

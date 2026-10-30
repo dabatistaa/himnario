@@ -42,6 +42,18 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
   const [settings, setSettings] = useState<Settings>({ ...DEFAULT_SETTINGS })
   const [projLastSeen, setProjLastSeen] = useState<number | null>(null)
   const [relayConnected, setRelayConnected] = useState(false)
+  const [copiedObs, setCopiedObs] = useState(false)
+
+  const sala = getSala()
+  const obsUrl = sala ? `${window.location.origin}/proyector?sala=${sala}` : ''
+
+  const copyObsUrl = () => {
+    if (!obsUrl) return
+    navigator.clipboard.writeText(obsUrl).then(() => {
+      setCopiedObs(true)
+      setTimeout(() => setCopiedObs(false), 2500)
+    })
+  }
 
   const [searchQuery, setSearchQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
@@ -215,15 +227,31 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: projConnected ? '#5BD18B' : '#6B7180' }} />
             {narrow ? (projConnected ? 'Proj' : 'Sin proj') : (projConnected ? 'Proyector conectado' : 'Proyector sin abrir')}
           </span>
-          {getSala() && (
+          {sala && (
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11,
               padding: '3px 8px', borderRadius: 999, border: '1px solid #333844',
               color: relayConnected ? '#CDEFD9' : '#9AA0AC',
             }}>
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: relayConnected ? '#5BD18B' : '#6B7180' }} />
-              {relayConnected ? `Relay · ${getSala()}` : 'Relay…'}
+              {relayConnected ? `Sala: ${sala}` : 'Conectando…'}
             </span>
+          )}
+          {sala && !narrow && (
+            <button
+              type="button"
+              onClick={copyObsUrl}
+              title={obsUrl}
+              style={{
+                ...btnBase, gap: 6, height: 32, padding: '0 12px', borderRadius: 8,
+                border: '1px solid #333844',
+                background: copiedObs ? '#2A3D2A' : '#1A1D24',
+                color: copiedObs ? '#5BD18B' : '#9AA0AC',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              {copiedObs ? '✓ URL OBS copiada' : '📋 Copiar URL OBS'}
+            </button>
           )}
         </div>
 
