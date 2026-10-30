@@ -23,7 +23,7 @@ function normalizeJuvenil(raw: unknown): Hymn[] {
     title: h.titulo,
     musicNote: h.tono ?? '',
     author: h.autores?.letra ?? undefined,
-    content: h.estrofas.map((e): HymnSection => ({
+    content: [...h.estrofas].sort((a, b) => a.id - b.id).map((e): HymnSection => ({
       type: e.numero === 0 ? 'chorus' : 'stanza',
       number: e.numero > 0 ? e.numero : undefined,
       text: e.texto,

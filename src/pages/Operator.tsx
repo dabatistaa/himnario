@@ -456,7 +456,7 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
             slides={slides}
             currentIndex={safeIdx}
             hymn={hymn ? { number: hymn.number, title: hymn.title } : null}
-            blank={blank}
+            blank={false}
             scale={scale}
             settings={settings}
             onClick={nextSlide}
