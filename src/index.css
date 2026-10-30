@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap');
+
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  background: #0E1014;
+  color: #E7E8EC;
+}
+
+#root {
+  width: 100%;
+  min-height: 100svh;
+}
+
+button:focus-visible {
+  outline: 2px solid #E3B260;
+  outline-offset: 2px;
+}
+
+input:focus-visible {
+  outline: 2px solid #E3B260;
+  outline-offset: 2px;
+}
