@@ -14,7 +14,7 @@ import { Stage } from '../components/Stage'
 import { useKeyboard } from '../hooks/useKeyboard'
 import { buildSlides } from '../lib/slides'
 import { searchHymns } from '../lib/search'
-import { broadcastState, DEFAULT_SETTINGS, loadPersistedState, onMessage, persistState, isRelayConnected, getSala } from '../lib/sync'
+import { broadcastState, DEFAULT_SETTINGS, loadPersistedState, onMessage, persistState, isRelayConnected, getSala, setSala } from '../lib/sync'
 import type { Hymn, HymnaryId, ProjectionTheme, Settings, Slide } from '../types'
 
 interface OperatorPageProps {
@@ -43,9 +43,22 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
   const [projLastSeen, setProjLastSeen] = useState<number | null>(null)
   const [relayConnected, setRelayConnected] = useState(false)
   const [copiedObs, setCopiedObs] = useState(false)
+  const [salaState, setSalaState] = useState<string>(() => getSala() ?? '')
+  const [editingSala, setEditingSala] = useState(false)
+  const [salaInput, setSalaInput] = useState('')
+  const salaInputRef = useRef<HTMLInputElement>(null)
 
-  const sala = getSala()
+  const sala = salaState || getSala() || ''
   const obsUrl = sala ? `${window.location.origin}/proyector?sala=${sala}` : ''
+
+  const confirmSalaEdit = () => {
+    const code = salaInput.trim().toUpperCase()
+    if (code.length >= 2) {
+      const newSala = setSala(code)
+      setSalaState(newSala)
+    }
+    setEditingSala(false)
+  }
 
   const copyObsUrl = () => {
     if (!obsUrl) return
@@ -227,15 +240,44 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: projConnected ? '#5BD18B' : '#6B7180' }} />
             {narrow ? (projConnected ? 'Proj' : 'Sin proj') : (projConnected ? 'Proyector conectado' : 'Proyector sin abrir')}
           </span>
-          {sala && (
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11,
-              padding: '3px 8px', borderRadius: 999, border: '1px solid #333844',
-              color: relayConnected ? '#CDEFD9' : '#9AA0AC',
-            }}>
+          {editingSala ? (
+            <form
+              onSubmit={e => { e.preventDefault(); confirmSalaEdit() }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+            >
+              <input
+                ref={salaInputRef}
+                value={salaInput}
+                onChange={e => setSalaInput(e.target.value.toUpperCase().slice(0, 20))}
+                onKeyDown={e => { e.stopPropagation(); if (e.key === 'Escape') setEditingSala(false) }}
+                autoFocus
+                placeholder="Ej: SMI-MTY"
+                style={{
+                  height: 26, padding: '0 8px', borderRadius: 6, border: '1px solid #E3B260',
+                  background: '#1A1D24', color: '#E3B260', fontFamily: 'monospace',
+                  fontSize: 12, fontWeight: 700, width: 110, outline: 'none',
+                }}
+              />
+              <button type="submit" style={{ height: 26, padding: '0 8px', borderRadius: 6, border: 0, background: '#E3B260', color: '#1A1408', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>OK</button>
+              <button type="button" onClick={() => setEditingSala(false)} style={{ height: 26, padding: '0 6px', borderRadius: 6, border: '1px solid #333844', background: 'transparent', color: '#9AA0AC', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
+            </form>
+          ) : (
+            <button
+              type="button"
+              title="Cambiar sala"
+              onClick={() => { setSalaInput(sala); setEditingSala(true) }}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11,
+                padding: '3px 8px', borderRadius: 999, border: '1px solid #333844',
+                background: 'transparent',
+                color: relayConnected ? '#CDEFD9' : '#9AA0AC',
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: relayConnected ? '#5BD18B' : '#6B7180' }} />
-              {relayConnected ? `Sala: ${sala}` : 'Conectando…'}
-            </span>
+              {relayConnected ? `Sala: ${sala}` : (sala ? 'Conectando…' : 'Sin sala')}
+              <span style={{ color: '#9AA0AC', fontSize: 10, marginLeft: 1 }}>✎</span>
+            </button>
           )}
           {sala && !narrow && (
             <button

@@ -1,5 +1,6 @@
 import type { HymnaryId, SyncState } from '../types'
-import { getSala, initRelay, isRelayConnected, onRelayMessage, relaySend } from './relay'
+import { getSala, initRelay, isRelayConnected, onRelayMessage, relaySend, setSala } from './relay'
+export { getSala, isRelayConnected, setSala }
 
 const CHANNEL_NAME = 'himnario-smi'
 
@@ -84,8 +85,6 @@ export function onMessage(handler: (msg: Msg) => void): () => void {
   ch.addEventListener('message', listener)
   return () => ch.removeEventListener('message', listener)
 }
-
-export { isRelayConnected, getSala }
 
 // ── Persistence ─────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'himnario-smi:operador'

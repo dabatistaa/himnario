@@ -30,9 +30,9 @@ export function getSala(): string | null {
       return urlSala
     }
 
-    // Recuperar o generar sala
+    // Recuperar o generar sala (rechaza códigos inválidos o de ejemplo)
     let sala = localStorage.getItem(SALA_KEY)
-    if (!sala) sala = generateSala()
+    if (!sala || sala.length !== 6 || !/^[A-Z2-9]{6}$/.test(sala)) sala = generateSala()
     localStorage.setItem(SALA_KEY, sala)
 
     // Actualizar URL sin recargar
@@ -40,6 +40,24 @@ export function getSala(): string | null {
     window.history.replaceState({}, '', url.toString())
     return sala
   } catch { return null }
+}
+
+export function setSala(code: string): string {
+  const sala = code.trim().toUpperCase().slice(0, 20)
+  localStorage.setItem(SALA_KEY, sala)
+  try {
+    const url = new URL(window.location.href)
+    url.searchParams.set('sala', sala)
+    window.history.replaceState({}, '', url.toString())
+  } catch {}
+  // Reconectar relay con nueva sala
+  stopped = true
+  ws?.close()
+  ws = null
+  salaId = sala
+  stopped = false
+  connect()
+  return sala
 }
 
 export function initRelay(sala: string) {
