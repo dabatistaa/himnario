@@ -147,11 +147,11 @@ export function GuiaPage() {
               <p style={{ margin: '10px 0 0', color: '#9AA0AC', fontSize: 13 }}>El operador aparece como panel dentro de OBS — buscas y cambias himnos sin salir.</p>
             </StepCard>
 
-            <StepCard n={2} title="Agrega el proyector como Browser Source">
+            <StepCard n={2} title="Agrega el proyector como Fuente de navegador">
               <p style={{ margin: '0 0 10px', color: '#9AA0AC', fontSize: 14, lineHeight: 1.6 }}>
-                En tu escena: <strong style={{ color: '#E7E8EC' }}>+ → Browser Source</strong>
+                En tu escena: <strong style={{ color: '#E7E8EC' }}>+ → Fuente de navegador</strong>
               </p>
-              <Code value={`${APP}/proyector?sala=${SALA}`} label="URL del proyector (pegar en Browser Source):" />
+              <Code value={`${APP}/proyector?sala=${SALA}`} label="URL del proyector (pegar en Fuente de navegador):" />
               <div style={{ marginTop: 10, background: '#14171D', border: '1px solid #262A33', borderRadius: 8, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <Setting label="Width" value="1920" />
                 <Setting label="Height" value="1080" />
@@ -161,7 +161,7 @@ export function GuiaPage() {
 
             <StepCard n={3} title="¡Listo!">
               <p style={{ margin: 0, color: '#9AA0AC', fontSize: 14, lineHeight: 1.6 }}>
-                Lo que controlas en el dock aparece al instante en el Browser Source. Puedes controlar también desde el <strong style={{ color: '#E7E8EC' }}>celular</strong> abriendo la URL del operador.
+                Lo que controlas en el dock aparece al instante en la Fuente de navegador. Puedes controlar también desde el <strong style={{ color: '#E7E8EC' }}>celular</strong> abriendo la URL del operador.
               </p>
             </StepCard>
           </div>
