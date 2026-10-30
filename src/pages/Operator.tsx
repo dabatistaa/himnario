@@ -1,4 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+
+function useContainerWidth(ref: React.RefObject<HTMLDivElement | null>) {
+  const [width, setWidth] = useState(window.innerWidth)
+  useEffect(() => {
+    if (!ref.current) return
+    const ro = new ResizeObserver(([e]) => setWidth(e.contentRect.width))
+    ro.observe(ref.current)
+    return () => ro.disconnect()
+  }, [ref])
+  return width
+}
 import { Stage } from '../components/Stage'
 import { useKeyboard } from '../hooks/useKeyboard'
 import { buildSlides } from '../lib/slides'
@@ -163,12 +174,17 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
     justifyContent: 'center',
   }
 
+  const containerRef = useRef<HTMLDivElement>(null)
+  const containerWidth = useContainerWidth(containerRef)
+  const narrow = containerWidth < 520
+
   return (
     <div
+      ref={containerRef}
       tabIndex={0}
       style={{
         height: '100vh',
-        minHeight: 640,
+        minHeight: narrow ? 0 : 640,
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
@@ -183,36 +199,36 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
-        gap: 16,
-        padding: '14px 24px',
+        gap: narrow ? 8 : 16,
+        padding: narrow ? '10px 12px' : '14px 24px',
         borderBottom: '1px solid #262A33',
         background: '#14171D',
       }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flex: '0 0 auto' }}>
-          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.01em' }}>{HYMNARY_LABELS[hymnary]}</span>
-          <span style={{ fontSize: 13, color: '#9AA0AC' }}>Operador</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: narrow ? '1 1 auto' : '0 0 auto' }}>
+          {!narrow && <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.01em' }}>{HYMNARY_LABELS[hymnary]}</span>}
+          {!narrow && <span style={{ fontSize: 13, color: '#9AA0AC' }}>Operador</span>}
           <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12,
-            padding: '4px 10px', borderRadius: 999, border: '1px solid #333844',
+            display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11,
+            padding: '3px 8px', borderRadius: 999, border: '1px solid #333844',
             color: projConnected ? '#CDEFD9' : '#9AA0AC',
           }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: projConnected ? '#5BD18B' : '#6B7180' }} />
-            {projConnected ? 'Proyector conectado' : 'Proyector sin abrir'}
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: projConnected ? '#5BD18B' : '#6B7180' }} />
+            {narrow ? (projConnected ? 'Proj' : 'Sin proj') : (projConnected ? 'Proyector conectado' : 'Proyector sin abrir')}
           </span>
           {getSala() && (
             <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12,
-              padding: '4px 10px', borderRadius: 999, border: '1px solid #333844',
+              display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11,
+              padding: '3px 8px', borderRadius: 999, border: '1px solid #333844',
               color: relayConnected ? '#CDEFD9' : '#9AA0AC',
             }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: relayConnected ? '#5BD18B' : '#6B7180' }} />
-              {relayConnected ? `Relay · ${getSala()}` : 'Relay conectando…'}
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: relayConnected ? '#5BD18B' : '#6B7180' }} />
+              {relayConnected ? `Relay · ${getSala()}` : 'Relay…'}
             </span>
           )}
         </div>
 
         {/* Buscador */}
-        <div style={{ position: 'relative', flex: '1 1 360px', maxWidth: 560 }}>
+        <div style={{ position: 'relative', flex: narrow ? '1 1 100%' : '1 1 360px', maxWidth: narrow ? '100%' : 560 }}>
           <label htmlFor="buscar" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
             Buscar himno por número, título o letra
           </label>
@@ -274,19 +290,21 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
         </div>
 
         {/* Botones header */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
-          <button type="button" onClick={() => setScale(s => Math.max(0.6, +(s - 0.1).toFixed(2)))} aria-label="Letra más pequeña" style={{ ...btnBase, height: 44, minWidth: 44, padding: '0 12px', borderRadius: 10, border: '1px solid #333844', background: '#1A1D24', color: '#E7E8EC', fontSize: 15 }}>A−</button>
-          <button type="button" onClick={() => setScale(s => Math.min(1.6, +(s + 0.1).toFixed(2)))} aria-label="Letra más grande" style={{ ...btnBase, height: 44, minWidth: 44, padding: '0 12px', borderRadius: 10, border: '1px solid #333844', background: '#1A1D24', color: '#E7E8EC', fontSize: 19, fontWeight: 700 }}>A+</button>
-          <button type="button" onClick={toggleBlank} aria-pressed={blank} style={{ ...btnBase, height: 44, padding: '0 16px', borderRadius: 10, border: '1px solid #333844', background: blank ? '#E7E8EC' : '#1A1D24', color: blank ? '#111318' : '#E7E8EC', fontSize: 15 }}>Pantalla negra</button>
-          <button type="button" onClick={openProjector} style={{ ...btnBase, gap: 8, height: 44, padding: '0 18px', borderRadius: 10, border: 0, background: '#E3B260', color: '#1A1408', fontSize: 15, fontWeight: 700 }}>
-            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9V4h5"/><path d="M20 9V4h-5"/><path d="M4 15v5h5"/><path d="M20 15v5h-5"/></svg>
-            Proyectar
-          </button>
-        </div>
+        {!narrow && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
+            <button type="button" onClick={() => setScale(s => Math.max(0.6, +(s - 0.1).toFixed(2)))} aria-label="Letra más pequeña" style={{ ...btnBase, height: 44, minWidth: 44, padding: '0 12px', borderRadius: 10, border: '1px solid #333844', background: '#1A1D24', color: '#E7E8EC', fontSize: 15 }}>A−</button>
+            <button type="button" onClick={() => setScale(s => Math.min(1.6, +(s + 0.1).toFixed(2)))} aria-label="Letra más grande" style={{ ...btnBase, height: 44, minWidth: 44, padding: '0 12px', borderRadius: 10, border: '1px solid #333844', background: '#1A1D24', color: '#E7E8EC', fontSize: 19, fontWeight: 700 }}>A+</button>
+            <button type="button" onClick={toggleBlank} aria-pressed={blank} style={{ ...btnBase, height: 44, padding: '0 16px', borderRadius: 10, border: '1px solid #333844', background: blank ? '#E7E8EC' : '#1A1D24', color: blank ? '#111318' : '#E7E8EC', fontSize: 15 }}>Pantalla negra</button>
+            <button type="button" onClick={openProjector} style={{ ...btnBase, gap: 8, height: 44, padding: '0 18px', borderRadius: 10, border: 0, background: '#E3B260', color: '#1A1408', fontSize: 15, fontWeight: 700 }}>
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9V4h5"/><path d="M20 9V4h-5"/><path d="M4 15v5h5"/><path d="M20 15v5h-5"/></svg>
+              Proyectar
+            </button>
+          </div>
+        )}
       </header>
 
       {/* Pestañas de himnario */}
-      <div style={{ display: 'flex', gap: 0, padding: '0 24px', background: '#14171D', borderBottom: '1px solid #262A33' }}>
+      <div style={{ display: 'flex', gap: 0, padding: narrow ? '0 12px' : '0 24px', background: '#14171D', borderBottom: '1px solid #262A33' }}>
         {(['smi', 'juvenil'] as HymnaryId[]).map(id => (
           <button
             key={id}
@@ -294,9 +312,9 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
             onClick={() => switchHymnary(id)}
             style={{
               ...btnBase,
-              height: 42,
-              padding: '0 20px',
-              fontSize: 14,
+              height: narrow ? 36 : 42,
+              padding: narrow ? '0 12px' : '0 20px',
+              fontSize: narrow ? 13 : 14,
               fontWeight: hymnary === id ? 700 : 400,
               color: hymnary === id ? '#E3B260' : '#9AA0AC',
               background: 'transparent',
@@ -312,10 +330,10 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
       </div>
 
       {/* Main */}
-      <main style={{ flex: '1 1 auto', minHeight: 0, display: 'flex', flexWrap: 'wrap', gap: 20, padding: '20px 24px', overflow: 'auto' }}>
+      <main style={{ flex: '1 1 auto', minHeight: 0, display: 'flex', flexWrap: 'wrap', gap: narrow ? 10 : 20, padding: narrow ? '12px 12px' : '20px 24px', overflow: 'auto' }}>
 
         {/* Sección izquierda */}
-        <section style={{ flex: '999 1 640px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <section style={{ flex: '999 1 0px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: narrow ? 8 : 14 }}>
 
           {/* Encabezado del himno */}
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
@@ -336,8 +354,8 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
             </button>
           </div>
 
-          {/* Vista previa 16:9 */}
-          <Stage
+          {/* Vista previa 16:9 — oculta en modo dock */}
+          {!narrow && <Stage
             slide={slide}
             slides={slides}
             currentIndex={safeIdx}
@@ -353,7 +371,7 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
               borderRadius: 14,
               border: '1px solid #262A33',
             }}
-          />
+          />}
 
           {/* Controles de navegación */}
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
@@ -373,13 +391,15 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
                 Ir al {digitBuffer} ↵
               </span>
             )}
-            <span style={{ marginLeft: 'auto', fontSize: 13, color: '#9AA0AC', lineHeight: 1.5 }}>
-              → o Espacio: siguiente · ←: anterior · escribe un número + Enter · B: negro · F: proyectar · Esc: salir
-            </span>
+            {!narrow && (
+              <span style={{ marginLeft: 'auto', fontSize: 13, color: '#9AA0AC', lineHeight: 1.5 }}>
+                → o Espacio: siguiente · ←: anterior · escribe un número + Enter · B: negro · F: proyectar · Esc: salir
+              </span>
+            )}
           </div>
 
-          {/* Ajustes */}
-          <details style={{ borderRadius: 10, border: '1px solid #262A33', background: '#14171D' }}>
+          {/* Ajustes — ocultos en modo dock */}
+          {!narrow && <details style={{ borderRadius: 10, border: '1px solid #262A33', background: '#14171D' }}>
             <summary style={{ padding: '12px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#9AA0AC', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Pantalla</summary>
             <div style={{ padding: '4px 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
@@ -397,11 +417,11 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
                 </label>
               ))}
             </div>
-          </details>
+          </details>}
         </section>
 
         {/* Columna derecha: Orden del himno */}
-        <aside style={{ flex: '1 1 300px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto' }}>
+        <aside style={{ flex: narrow ? '1 1 100%' : '1 1 300px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: narrow ? 6 : 10, overflowY: 'auto' }}>
           <h2 style={{ margin: 0, fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9AA0AC' }}>Orden del himno</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {slides.map((s, i) => {
