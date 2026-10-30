@@ -2,7 +2,9 @@ import { useState } from 'react'
 
 const RELAY = 'https://himnario-relay.dabatistaa.workers.dev'
 const APP = 'https://himnario.impartela.org'
-const SALA = new URLSearchParams(window.location.search).get('sala') ?? 'TU-SALA'
+const SALA = new URLSearchParams(window.location.search).get('sala')
+  ?? localStorage.getItem('himnario-sala')
+  ?? 'TU-SALA'
 
 function CopyBtn({ text, label = 'Copiar' }: { text: string; label?: string }) {
   const [done, setDone] = useState(false)
