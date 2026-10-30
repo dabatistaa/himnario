@@ -18,28 +18,31 @@ function generateSala(): string {
 
 export function getSala(): string | null {
   try {
-    const url = new URL(window.location.href)
-    const urlSala = url.searchParams.get('sala')
-
-    // En el proyector solo se usa el param de URL (no auto-generar)
-    if (window.location.pathname.startsWith('/proyector')) return urlSala
-
-    // En el operador: URL param tiene prioridad
+    const urlSala = new URL(window.location.href).searchParams.get('sala')
     if (urlSala) {
       localStorage.setItem(SALA_KEY, urlSala)
       return urlSala
     }
-
-    // Recuperar o generar sala (rechaza códigos inválidos o de ejemplo)
-    let sala = localStorage.getItem(SALA_KEY)
-    if (!sala || sala.length !== 6 || !/^[A-Z2-9]{6}$/.test(sala)) sala = generateSala()
-    localStorage.setItem(SALA_KEY, sala)
-
-    // Actualizar URL sin recargar
-    url.searchParams.set('sala', sala)
-    window.history.replaceState({}, '', url.toString())
-    return sala
+    const stored = localStorage.getItem(SALA_KEY)
+    return (stored && stored.length >= 2) ? stored : null
   } catch { return null }
+}
+
+export function generateAndSetSala(): string {
+  return setSala(generateSala())
+}
+
+export function clearSala() {
+  localStorage.removeItem(SALA_KEY)
+  try {
+    const url = new URL(window.location.href)
+    url.searchParams.delete('sala')
+    window.history.replaceState({}, '', url.toString())
+  } catch {}
+  stopped = true
+  ws?.close()
+  ws = null
+  salaId = null
 }
 
 export function setSala(code: string): string {

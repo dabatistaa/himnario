@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Stage } from '../components/Stage'
 import { buildSlides } from '../lib/slides'
-import { broadcastCmd, broadcastHello, onMessage } from '../lib/sync'
+import { broadcastCmd, broadcastHello, onMessage, getSala, setSala, resetRelay } from '../lib/sync'
 import type { Hymn, HymnaryId, Slide } from '../types'
 
 interface ProjectorPageProps {
@@ -23,23 +23,35 @@ interface RemoteState {
 
 export function ProjectorPage({ hymnsSmi, hymnsJuvenil }: ProjectorPageProps) {
   const [remote, setRemote] = useState<RemoteState | null>(null)
+  const [salaReady, setSalaReady] = useState<boolean>(() => !!getSala())
+  const [joinInput, setJoinInput] = useState('')
   const bufRef = useRef('')
   const bufTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
 
+  const handleJoin = () => {
+    const code = joinInput.trim().toUpperCase()
+    if (code.length < 2) return
+    setSala(code)
+    resetRelay()
+    setSalaReady(true)
+  }
+
   useEffect(() => {
+    if (!salaReady) return
     broadcastHello()
     const t = setInterval(broadcastHello, 3000)
     return () => clearInterval(t)
-  }, [])
+  }, [salaReady])
 
   useEffect(() => {
+    if (!salaReady) return
     return onMessage(msg => {
       if (msg.type === 'state') {
         setRemote(msg as unknown as RemoteState)
       }
     })
-  }, [])
+  }, [salaReady])
 
   const cmd = useCallback((action: 'next' | 'prev' | 'first' | 'blank' | 'goto', num?: number) => {
     broadcastCmd(action, num)
@@ -96,6 +108,39 @@ export function ProjectorPage({ hymnsSmi, hymnsJuvenil }: ProjectorPageProps) {
   const handleClick = () => {
     if (!document.fullscreenElement) toggleFullscreen()
     else cmd('next')
+  }
+
+  if (!salaReady) {
+    return (
+      <div style={{
+        width: '100%', height: '100vh', background: '#0E1014', color: '#E7E8EC',
+        fontFamily: "'Atkinson Hyperlegible', system-ui, sans-serif",
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24,
+      }}>
+        <div style={{ fontSize: 28, fontWeight: 700 }}>Himnario SMI</div>
+        <div style={{ fontSize: 16, color: '#9AA0AC' }}>Ingresa el código de sala del operador</div>
+        <form onSubmit={e => { e.preventDefault(); handleJoin() }}
+          style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <input
+            value={joinInput}
+            onChange={e => setJoinInput(e.target.value.toUpperCase().slice(0, 20))}
+            placeholder="Código de sala"
+            autoFocus
+            style={{
+              height: 48, padding: '0 16px', borderRadius: 10, border: '2px solid #E3B260',
+              background: '#14171D', color: '#E3B260', fontFamily: 'monospace',
+              fontSize: 20, fontWeight: 700, width: 200, outline: 'none', textAlign: 'center',
+              letterSpacing: '0.12em',
+            }}
+          />
+          <button type="submit" style={{
+            height: 48, padding: '0 24px', borderRadius: 10, border: 0,
+            background: '#E3B260', color: '#1A1408', fontFamily: 'inherit',
+            fontSize: 16, fontWeight: 700, cursor: 'pointer',
+          }}>Conectar</button>
+        </form>
+      </div>
+    )
   }
 
   return (

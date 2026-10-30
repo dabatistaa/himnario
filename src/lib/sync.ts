@@ -1,6 +1,6 @@
 import type { HymnaryId, SyncState } from '../types'
-import { getSala, initRelay, isRelayConnected, onRelayMessage, relaySend, setSala } from './relay'
-export { getSala, isRelayConnected, setSala }
+import { getSala, initRelay, isRelayConnected, onRelayMessage, relaySend, setSala, generateAndSetSala, clearSala } from './relay'
+export { getSala, isRelayConnected, setSala, generateAndSetSala, clearSala }
 
 const CHANNEL_NAME = 'himnario-smi'
 
@@ -30,10 +30,16 @@ function getChannel(): BroadcastChannel {
 // ── Relay WebSocket (cross-device / OBS) ────────────────────────────────────
 let relayReady = false
 function ensureRelay() {
+  const sala = getSala()
+  if (!sala) return
   if (relayReady) return
   relayReady = true
-  const sala = getSala()
-  if (sala) initRelay(sala)
+  initRelay(sala)
+}
+
+export function resetRelay() {
+  relayReady = false
+  ensureRelay()
 }
 
 function usesRelay(): boolean { return !!getSala() }
