@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 
 interface FitTextProps {
   children: string
@@ -17,7 +17,7 @@ interface FitTextProps {
 export function FitText({ children, maxVmin = 11, minVmin = 2.8, lineHeight = 1.3, style }: FitTextProps) {
   const ref = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current
     const container = el?.parentElement
     if (!el || !container) return
