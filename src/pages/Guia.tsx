@@ -175,9 +175,25 @@ export function GuiaPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <StepCard n={1} title='Instala el plugin "Super Macro"'>
-              <p style={{ margin: 0, color: '#9AA0AC', fontSize: 14, lineHeight: 1.6 }}>
-                Stream Deck app → ícono de tienda → busca <strong style={{ color: '#E7E8EC' }}>Super Macro</strong> de BarRaider → Instalar.
+              <p style={{ margin: '0 0 12px', color: '#9AA0AC', fontSize: 14, lineHeight: 1.6 }}>
+                Elige una de estas dos opciones:
               </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ background: '#0E1014', border: '1px solid #262A33', borderRadius: 10, padding: '14px 16px' }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: '#E7E8EC' }}>Opción A — Desde GitHub (sin cuenta)</div>
+                  <ol style={{ margin: 0, paddingLeft: 18, color: '#9AA0AC', fontSize: 14, lineHeight: 1.8, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <li>Ve a <a href="https://github.com/BarRaider/streamdeck-supermacro/releases" target="_blank" rel="noopener noreferrer" style={{ color: '#E3B260', fontSize: 13 }}>github.com/BarRaider/streamdeck-supermacro/releases</a></li>
+                    <li>Descarga el archivo <code style={{ color: '#E3B260', fontSize: 13 }}>com.barraider.supermacro.streamDeckPlugin</code></li>
+                    <li>Haz doble clic en el archivo descargado — Stream Deck lo instala automáticamente</li>
+                  </ol>
+                </div>
+                <div style={{ background: '#0E1014', border: '1px solid #262A33', borderRadius: 10, padding: '14px 16px' }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: '#E7E8EC' }}>Opción B — Desde la tienda de Elgato</div>
+                  <p style={{ margin: 0, color: '#9AA0AC', fontSize: 14, lineHeight: 1.6 }}>
+                    Stream Deck app → ícono de tienda → busca <strong style={{ color: '#E7E8EC' }}>Super Macro</strong> de BarRaider → Instalar. (Requiere cuenta de Elgato)
+                  </p>
+                </div>
+              </div>
             </StepCard>
 
             <StepCard n={2} title="Para cada botón: selecciona Super Macro → Run System Command">
