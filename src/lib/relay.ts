@@ -78,7 +78,9 @@ function connect() {
   ws.onmessage = ({ data }) => {
     try {
       const msg = JSON.parse(data as string)
-      if ((msg as { type?: string }).type === 'state') lastState = msg
+      const t = (msg as { type?: string }).type
+      // Guardar el último estado de cualquier modo para replay al reconectar
+      if (t === 'state' || t === 'bible-state' || t === 'leccion-state') lastState = msg
       handlers.forEach(h => h(msg))
     } catch {}
   }

@@ -108,8 +108,9 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
 
   const sendState = useCallback(() => {
     if (!isActiveRef.current) return
+    if (tab !== 'smi' && tab !== 'juvenil') return   // no emitir himno desde Lección/Biblia
     broadcastState({ num: hymnNum, idx: safeIdx, blank, scale, settings, hymnary }, myId.current)
-  }, [hymnNum, safeIdx, blank, scale, settings, hymnary])
+  }, [hymnNum, safeIdx, blank, scale, settings, hymnary, tab])
 
   useEffect(() => {
     activationTimerRef.current = setTimeout(() => {
