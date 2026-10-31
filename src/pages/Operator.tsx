@@ -146,7 +146,9 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
     return onMessage(msg => {
       if (msg.type === 'hello') {
         setProjLastSeen(Date.now())
-        sendState()
+        // Solo responder con himno si el tab activo es himnario;
+        // si está en Lección/Biblia, esos módulos gestionan su propio sync
+        if (tab === 'smi' || tab === 'juvenil') sendState()
       } else if (msg.type === 'state') {
         const m = msg as { type: 'state'; operatorId?: string }
         if (m.operatorId && m.operatorId !== myId.current) {
@@ -165,7 +167,7 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
         else if (m.action === 'goto' && m.num) goToHymn(m.num)
       }
     })
-  }, [sendState, slides.length])
+  }, [sendState, slides.length, tab])
 
   useEffect(() => {
     const t = setInterval(() => {
