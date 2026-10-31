@@ -135,6 +135,13 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
     persistState({ num: hymnNum, idx: safeIdx, scale, hymnary })
   }, [hymnNum, safeIdx, blank, scale, settings, hymnary])
 
+  // Al volver a un tab de himnario, forzar broadcast aunque el estado no haya cambiado
+  useEffect(() => {
+    if ((tab === 'smi' || tab === 'juvenil') && isActiveRef.current) {
+      sendState()
+    }
+  }, [tab, sendState])
+
   useEffect(() => {
     return onMessage(msg => {
       if (msg.type === 'hello') {
