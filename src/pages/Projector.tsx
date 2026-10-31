@@ -265,17 +265,7 @@ export function ProjectorPage({ hymnsSmi, hymnsJuvenil }: ProjectorPageProps) {
         }}
         onClick={toggleFullscreen}
       >
-        {/* Referencia fija arriba — tamaño generoso */}
-        <div style={{
-          flexShrink: 0, textAlign: 'center',
-          fontSize: `${3 * bScale}vmin`, fontWeight: 700,
-          color: bAccent, letterSpacing: '0.12em', textTransform: 'uppercase',
-          marginBottom: '2vmin',
-        }}>
-          {bibleRemote.reference}
-        </div>
-
-        {/* Texto centrado verticalmente en el espacio restante */}
+        {/* Texto centrado verticalmente */}
         <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           <FitText
             maxVmin={11 * bScale}
@@ -285,6 +275,15 @@ export function ProjectorPage({ hymnsSmi, hymnsJuvenil }: ProjectorPageProps) {
           >
             {bibleRemote.text}
           </FitText>
+        </div>
+
+        {/* Referencia al fondo */}
+        <div style={{
+          flexShrink: 0, textAlign: 'center', marginTop: '2vmin',
+          fontSize: `${3.5 * bScale}vmin`, fontWeight: 700,
+          color: bAccent, letterSpacing: '0.12em', textTransform: 'uppercase',
+        }}>
+          {bibleRemote.reference}
         </div>
       </div>
     )
