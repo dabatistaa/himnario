@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { broadcastBibleState, broadcastBibleHello, onBibleMessage, getSala } from '../lib/syncBible'
 import type { BibleSyncState, BibleVerse } from '../lib/syncBible'
+import { FitText } from '../components/FitText'
 
 type BibleBook = { abbrev: string; name: string; chapters: string[][] }
 
@@ -284,12 +285,19 @@ export function BibliaOperatorPage({ embedded = false }: { embedded?: boolean })
                   <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>Pantalla oscura</span>
                 </div>
               )}
-              <div style={{ flex: 1, padding: '20px 24px', overflow: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: pAccent, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>
+              <div style={{ flex: 1, minHeight: 0, padding: '12px 16px 6px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: pAccent, letterSpacing: '0.1em', textTransform: 'uppercase', textAlign: 'center', marginBottom: 8 }}>
                   {previewRef}
                 </div>
-                <div style={{ fontSize: Math.round(16 * textScale), color: pMain, lineHeight: 1.55, whiteSpace: 'pre-line', maxWidth: 480 }}>
-                  {previewText || <span style={{ opacity: 0.3 }}>Sin texto</span>}
+                <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                  <FitText
+                    maxVmin={11 * textScale}
+                    minVmin={2.5}
+                    lineHeight={1.35}
+                    style={{ fontWeight: 600, color: pMain, textAlign: 'center' }}
+                  >
+                    {previewText || ' '}
+                  </FitText>
                 </div>
               </div>
             </div>

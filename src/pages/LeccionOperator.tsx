@@ -17,6 +17,7 @@ import {
 import type { Book, Lesson, LessonSummary } from '../types/lesson'
 import type { PresentationConfig } from '../data/presentation'
 import type { LeccionSyncState } from '../lib/syncLesson'
+import { LeccionSlideView } from '../components/LeccionSlideView'
 
 const TOGGLE_ITEMS: { key: keyof Omit<PresentationConfig, 'background' | 'overlayOpacity'>; label: string; sub: string }[] = [
   { key: 'lessonTitle',    label: 'Portada',           sub: 'Título y fecha de la lección' },
@@ -211,51 +212,21 @@ export function LeccionOperatorPage({ embedded = false }: { embedded?: boolean }
             <div className="flex-1 flex items-center justify-center opacity-40 text-sm">Cargando lección…</div>
           ) : lesson ? (
             <>
-              {/* Mini preview del slide actual */}
-              {(() => {
-                const previewLight = isLightBackground(config.background)
-                const previewAccent = previewLight ? '#1A5C8A' : '#6EDCCF'
-                const previewMain   = previewLight ? '#1A1A2E' : '#FFFFFF'
-                const previewDim    = previewLight ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.55)'
-                return (
-                  <div
-                    className="flex-shrink-0 mx-4 mt-3 mb-2 rounded-lg overflow-hidden flex items-center justify-center"
-                    style={{ height: 130, background: backgroundCss(config.background, book?.coverUrl), position: 'relative' }}
-                  >
-                    {slide ? (
-                      <div className="text-center px-4 py-3" style={{ zIndex: 1 }}>
-                        {slide.kind === 'lessonTitle' ? (
-                          <>
-                            <div className="text-xs font-bold mb-1" style={{ color: previewAccent }}>Lección {slide.lessonNumber}</div>
-                            <div className="text-sm font-bold leading-tight" style={{ color: previewMain }}>{slide.title}</div>
-                            {slide.date && <div className="text-xs mt-1" style={{ color: previewDim }}>{slide.date}</div>}
-                          </>
-                        ) : slide.kind === 'question' ? (
-                          <>
-                            <div className="text-lg font-bold mb-1" style={{ color: previewAccent }}>{slide.number}</div>
-                            <div className="text-xs leading-snug line-clamp-3" style={{ color: previewMain }}>{slide.text}</div>
-                          </>
-                        ) : slide.kind === 'verse' ? (
-                          <>
-                            <div className="text-xs font-bold mb-1" style={{ color: previewAccent }}>{slide.reference}</div>
-                            <div className="text-xs italic line-clamp-3" style={{ color: previewMain }}>{slide.text}</div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="text-xs font-bold mb-1 uppercase tracking-wide" style={{ color: previewAccent }}>{getSlideLabel(slide)}</div>
-                            <div className="text-xs line-clamp-3" style={{ color: previewMain }}>{slide.text}</div>
-                          </>
-                        )}
-                        {slide.total && slide.total > 1 && (
-                          <div className="text-xs mt-1" style={{ color: previewDim }}>{slide.page} / {slide.total}</div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-xs" style={{ color: previewDim }}>Sin diapositivas</div>
-                    )}
-                  </div>
-                )
-              })()}
+              {/* Mini preview — usa LeccionSlideView con FitText, mismas proporciones que el proyector */}
+              <div
+                className="flex-shrink-0 mx-4 mt-3 mb-2 rounded-lg overflow-hidden"
+                style={{ height: 160, background: backgroundCss(config.background, book?.coverUrl), position: 'relative', display: 'flex', flexDirection: 'column' }}
+              >
+                {config.overlayOpacity > 0 && (
+                  <div style={{ position: 'absolute', inset: 0, background: `rgba(0,0,0,${config.overlayOpacity * 0.6})`, pointerEvents: 'none', zIndex: 0 }} />
+                )}
+                <div style={{ position: 'relative', zIndex: 1, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                  {slide
+                    ? <LeccionSlideView slide={slide} scale={textScale} light={isLightBackground(config.background)} />
+                    : <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, opacity: 0.3, color: '#fff' }}>Sin diapositivas</div>
+                  }
+                </div>
+              </div>
 
               {/* Controles de navegación */}
               <div className="flex items-center gap-2 px-4 mb-2">
