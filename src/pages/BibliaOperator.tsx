@@ -27,7 +27,7 @@ function buildText(books: BibleBook[], v: BibleVerse): string {
   return verses.join('\n')
 }
 
-export function BibliaOperatorPage() {
+export function BibliaOperatorPage({ embedded = false }: { embedded?: boolean }) {
   const [books, setBooks] = useState<BibleBook[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -88,7 +88,7 @@ export function BibliaOperatorPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0E1014', color: '#E3B260', fontFamily: 'Atkinson Hyperlegible, sans-serif' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0E1014', color: '#E3B260', fontFamily: 'Atkinson Hyperlegible, sans-serif' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Biblia</div>
           <div style={{ opacity: 0.6, fontSize: 14 }}>Cargando RV1960…</div>
@@ -131,27 +131,29 @@ export function BibliaOperatorPage() {
   const pDim   = theme === 'light' ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.55)'
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#0E1014', color: '#E8E0D5', fontFamily: 'Atkinson Hyperlegible, sans-serif' }}>
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', background: '#0E1014', color: '#E8E0D5', fontFamily: 'Atkinson Hyperlegible, sans-serif' }}>
 
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Link to="/" style={{ fontSize: 12, opacity: 0.4, color: 'inherit', textDecoration: 'none' }}>← Himnario</Link>
-          <span style={{ opacity: 0.2 }}>|</span>
-          <span style={{ fontWeight: 700, fontSize: 14, color: '#E3B260' }}>Biblia RV1960</span>
+      {/* Header — solo cuando no está embebido */}
+      {!embedded && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Link to="/" style={{ fontSize: 12, opacity: 0.4, color: 'inherit', textDecoration: 'none' }}>← Himnario</Link>
+            <span style={{ opacity: 0.2 }}>|</span>
+            <span style={{ fontWeight: 700, fontSize: 14, color: '#E3B260' }}>Biblia RV1960</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <a href={projUrl} target="_blank" rel="noreferrer"
+              style={{ fontSize: 11, opacity: 0.4, color: 'inherit', textDecoration: 'underline' }}>
+              Proyector ↗
+            </a>
+            {sala && (
+              <span style={{ fontSize: 11, background: '#1C2A3A', color: '#6EDCCF', padding: '2px 8px', borderRadius: 6, fontFamily: 'monospace', letterSpacing: '0.1em' }}>
+                {sala}
+              </span>
+            )}
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <a href={projUrl} target="_blank" rel="noreferrer"
-            style={{ fontSize: 11, opacity: 0.4, color: 'inherit', textDecoration: 'underline' }}>
-            Proyector ↗
-          </a>
-          {sala && (
-            <span style={{ fontSize: 11, background: '#1C2A3A', color: '#6EDCCF', padding: '2px 8px', borderRadius: 6, fontFamily: 'monospace', letterSpacing: '0.1em' }}>
-              {sala}
-            </span>
-          )}
-        </div>
-      </div>
+      )}
 
       {/* Body */}
       <div style={{ flex: 1, display: 'flex', gap: 0, overflow: 'hidden', minHeight: 0 }}>

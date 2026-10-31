@@ -52,7 +52,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
   )
 }
 
-export function LeccionOperatorPage() {
+export function LeccionOperatorPage({ embedded = false }: { embedded?: boolean }) {
   const [book, setBook] = useState<Book | null>(null)
   const [lessons, setLessons] = useState<LessonSummary[]>([])
   const [selectedLessonId, setSelectedLessonId] = useState<string>('')
@@ -165,26 +165,24 @@ export function LeccionOperatorPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#0E1014', color: '#E8E0D5', fontFamily: 'Atkinson Hyperlegible, sans-serif' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, background: '#0E1014', color: '#E8E0D5', fontFamily: 'Atkinson Hyperlegible, sans-serif' }}>
 
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <Link to="/" className="text-xs opacity-40 hover:opacity-70 transition-opacity">← Himnario</Link>
-          <span className="text-xs opacity-20">|</span>
-          <span className="font-bold text-sm" style={{ color: '#E3B260' }}>Lección</span>
-          {book && <span className="text-xs opacity-40 truncate max-w-40">{book.title}</span>}
+      {/* Header — solo cuando no está embebido */}
+      {!embedded && (
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <Link to="/" className="text-xs opacity-40 hover:opacity-70 transition-opacity">← Himnario</Link>
+            <span className="text-xs opacity-20">|</span>
+            <span className="font-bold text-sm" style={{ color: '#E3B260' }}>Lección</span>
+            {book && <span className="text-xs opacity-40 truncate max-w-40">{book.title}</span>}
+          </div>
+          <a href={projUrl} target="_blank" rel="noopener noreferrer"
+            className="text-xs px-3 py-1.5 rounded font-medium"
+            style={{ background: '#E3B260', color: '#0E1014' }}>
+            Abrir proyector
+          </a>
         </div>
-        <a
-          href={projUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs px-3 py-1.5 rounded font-medium"
-          style={{ background: '#E3B260', color: '#0E1014' }}
-        >
-          Abrir proyector
-        </a>
-      </div>
+      )}
 
       <div className="flex flex-1 overflow-hidden">
 

@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { LeccionOperatorPage } from './LeccionOperator'
+import { BibliaOperatorPage } from './BibliaOperator'
 
 function useContainerWidth(ref: React.RefObject<HTMLDivElement | null>) {
   const [width, setWidth] = useState(window.innerWidth)
@@ -17,6 +19,8 @@ import { searchHymns } from '../lib/search'
 import { broadcastState, DEFAULT_SETTINGS, loadPersistedState, onMessage, persistState, isRelayConnected, getSala, setSala, generateAndSetSala, clearSala, resetRelay } from '../lib/sync'
 import type { Hymn, HymnaryId, ProjectionTheme, Settings, Slide } from '../types'
 
+type OperatorTab = HymnaryId | 'leccion' | 'biblia'
+
 interface OperatorPageProps {
   hymnsSmi: Hymn[]
   hymnsJuvenil: Hymn[]
@@ -32,7 +36,8 @@ const HYMNARY_LABELS: Record<HymnaryId, string> = {
 export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
   const persisted = loadPersistedState()
 
-  const [hymnary, setHymnary] = useState<HymnaryId>(persisted.hymnary ?? 'smi')
+  const [tab, setTab] = useState<OperatorTab>(persisted.hymnary ?? 'smi')
+  const hymnary: HymnaryId = (tab === 'smi' || tab === 'juvenil') ? tab : 'smi'
   const hymns = hymnary === 'smi' ? hymnsSmi : hymnsJuvenil
 
   const [hymnNum, setHymnNum] = useState(persisted.num ?? (hymns[0]?.number ?? 1))
@@ -169,12 +174,14 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
     setBlank(false)
   }, [])
 
-  const switchHymnary = useCallback((id: HymnaryId) => {
-    setHymnary(id)
-    const newHymns = id === 'smi' ? hymnsSmi : hymnsJuvenil
-    setHymnNum(newHymns[0]?.number ?? 1)
-    setSlideIdx(0)
-    setBlank(false)
+  const switchTab = useCallback((id: OperatorTab) => {
+    setTab(id)
+    if (id === 'smi' || id === 'juvenil') {
+      const newHymns = id === 'smi' ? hymnsSmi : hymnsJuvenil
+      setHymnNum(newHymns[0]?.number ?? 1)
+      setSlideIdx(0)
+      setBlank(false)
+    }
   }, [hymnsSmi, hymnsJuvenil])
 
   const nextSlide = useCallback(() => setSlideIdx(i => Math.min(i + 1, slides.length - 1)), [slides.length])
@@ -426,14 +433,6 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9V4h5"/><path d="M20 9V4h-5"/><path d="M4 15v5h5"/><path d="M20 15v5h-5"/></svg>
               Proyectar
             </button>
-            <a href="/leccion" style={{ ...btnBase, height: 44, padding: '0 14px', borderRadius: 10, border: '1px solid #333844', background: '#1A1D24', color: '#9AA0AC', textDecoration: 'none', fontSize: 14, gap: 6 }}>
-              <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-              Lección
-            </a>
-            <a href="/biblia" style={{ ...btnBase, height: 44, padding: '0 14px', borderRadius: 10, border: '1px solid #333844', background: '#1A1D24', color: '#9AA0AC', textDecoration: 'none', fontSize: 14, gap: 6 }}>
-              <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-              Biblia
-            </a>
             <a href={`/guia?sala=${sala ?? ''}`} target="_blank" rel="noopener noreferrer" style={{ ...btnBase, height: 44, padding: '0 14px', borderRadius: 10, border: '1px solid #333844', background: '#1A1D24', color: '#9AA0AC', textDecoration: 'none', fontSize: 14, gap: 6 }}>
               <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               Guía OBS
@@ -481,34 +480,44 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
         </div>
       )}
 
-      {/* Pestañas de himnario */}
-      <div style={{ display: 'flex', gap: 0, padding: narrow ? '0 12px' : '0 24px', background: '#14171D', borderBottom: '1px solid #262A33' }}>
-        {(['smi', 'juvenil'] as HymnaryId[]).map(id => (
+      {/* Pestañas */}
+      <div style={{ display: 'flex', gap: 0, padding: narrow ? '0 12px' : '0 24px', background: '#14171D', borderBottom: '1px solid #262A33', overflowX: 'auto' }}>
+        {([
+          { id: 'smi',     label: 'Himnario SMI' },
+          { id: 'juvenil', label: narrow ? 'Juvenil' : 'Himnario Juvenil' },
+          { id: 'leccion', label: 'Lección' },
+          { id: 'biblia',  label: 'Biblia' },
+        ] as { id: OperatorTab; label: string }[]).map(({ id, label }) => (
           <button
             key={id}
             type="button"
-            onClick={() => switchHymnary(id)}
+            onClick={() => switchTab(id)}
             style={{
               ...btnBase,
               height: narrow ? 36 : 42,
               padding: narrow ? '0 12px' : '0 20px',
               fontSize: narrow ? 13 : 14,
-              fontWeight: hymnary === id ? 700 : 400,
-              color: hymnary === id ? '#E3B260' : '#9AA0AC',
+              fontWeight: tab === id ? 700 : 400,
+              color: tab === id ? '#E3B260' : '#9AA0AC',
               background: 'transparent',
               border: 'none',
-              borderBottom: hymnary === id ? '2px solid #E3B260' : '2px solid transparent',
+              borderBottom: tab === id ? '2px solid #E3B260' : '2px solid transparent',
               cursor: 'pointer',
               marginBottom: -1,
+              whiteSpace: 'nowrap',
             }}
           >
-            {HYMNARY_LABELS[id]}
+            {label}
           </button>
         ))}
       </div>
 
-      {/* ── Layout móvil ── */}
-      {narrow ? (
+      {/* ── Paneles Lección / Biblia ── */}
+      {tab === 'leccion' && <LeccionOperatorPage embedded />}
+      {tab === 'biblia'  && <BibliaOperatorPage  embedded />}
+
+      {/* ── Layout himnario ── */}
+      {(tab === 'smi' || tab === 'juvenil') && (narrow ? (
         <div style={{ flex: '1 1 auto', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
           {/* Himno actual: número + título + flechas */}
@@ -709,7 +718,7 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
           </div>
         </aside>
       </main>
-      )}
+      ))}
     </div>
   )
 }
