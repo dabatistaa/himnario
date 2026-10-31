@@ -2,18 +2,12 @@ import { useLayoutEffect, useRef } from 'react'
 
 interface FitTextProps {
   children: string
-  maxVmin?: number   // tamaño máximo relativo al contenedor (default 11)
-  minVmin?: number   // tamaño mínimo (default 2.8)
+  maxVmin?: number
+  minVmin?: number
   lineHeight?: number
   style?: React.CSSProperties
 }
 
-/**
- * Renderiza texto al tamaño máximo que quepa en su contenedor.
- * - Observa el PADRE (no el propio elemento) para evitar bucle infinito.
- * - Calcula vmin relativo al contenedor, no a window: funciona igual
- *   en proyector (pantalla completa) y en preview pequeño.
- */
 export function FitText({ children, maxVmin = 11, minVmin = 2.8, lineHeight = 1.3, style }: FitTextProps) {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -23,25 +17,39 @@ export function FitText({ children, maxVmin = 11, minVmin = 2.8, lineHeight = 1.
     if (!el || !container) return
 
     const fit = () => {
-      const cmin = Math.min(container.clientWidth, container.clientHeight)
+      const cw = container.clientWidth
+      const ch = container.clientHeight
+      const cmin = Math.min(cw, ch)
       if (cmin === 0) return
-      const unit = cmin / 100  // 1 "vmin" relativo al contenedor
-      let size = maxVmin
+
+      const unit = cmin / 100
+
+      // Parte del tamaño actual para evitar el flash de reset a máximo
+      const currentPx = parseFloat(el.style.fontSize)
+      let size = currentPx > 0 ? Math.min(currentPx / unit, maxVmin) : maxVmin
+
       el.style.fontSize = `${size * unit}px`
       el.style.lineHeight = String(lineHeight)
 
-      while (
-        (el.scrollHeight > container.clientHeight || el.scrollWidth > container.clientWidth)
-        && size > minVmin
-      ) {
+      // Reducir si desborda
+      while ((el.scrollHeight > ch || el.scrollWidth > cw) && size > minVmin) {
         size -= 0.2
         el.style.fontSize = `${size * unit}px`
+      }
+
+      // Crecer si hay espacio (hasta maxVmin)
+      while (el.scrollHeight <= ch && el.scrollWidth <= cw && size < maxVmin) {
+        const next = Math.min(maxVmin, size + 0.2)
+        el.style.fontSize = `${next * unit}px`
+        if (el.scrollHeight > ch || el.scrollWidth > cw) {
+          el.style.fontSize = `${size * unit}px`
+          break
+        }
+        size = next
       }
     }
 
     fit()
-    // Observar el PADRE: su tamaño cambia por window resize o layout,
-    // nunca por cambios de fontSize del hijo → sin bucle.
     const ro = new ResizeObserver(fit)
     ro.observe(container)
     return () => ro.disconnect()
