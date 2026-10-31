@@ -129,7 +129,6 @@ export function BibliaOperatorPage({ embedded = false }: { embedded?: boolean })
   const pBg    = theme === 'light' ? '#F5F0E8' : '#0D1B2A'
   const pMain  = theme === 'light' ? '#1A1A2E' : '#FFFFFF'
   const pAccent = theme === 'light' ? '#1A5C8A' : '#6EDCCF'
-  const pDim   = theme === 'light' ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.55)'
 
   return (
     <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', background: '#0E1014', color: '#E8E0D5', fontFamily: 'Atkinson Hyperlegible, sans-serif' }}>
@@ -179,7 +178,7 @@ export function BibliaOperatorPage({ embedded = false }: { embedded?: boolean })
                 Antiguo Testamento
               </div>
             )}
-            {filteredBooks.map((b, fi) => {
+            {filteredBooks.map((b) => {
               const realIdx = books.indexOf(b)
               const showNTDivider = !search && realIdx === TESTAMENT_BREAK
               return (

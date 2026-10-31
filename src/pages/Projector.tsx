@@ -255,7 +255,6 @@ export function ProjectorPage({ hymnsSmi, hymnsJuvenil }: ProjectorPageProps) {
     const bMain   = bLight ? '#1A1A2E' : '#FFFFFF'
     const bAccent = bLight ? '#1A5C8A' : '#6EDCCF'
     const bScale  = bibleRemote.textScale ?? 1
-    const s = (px: number) => Math.round(px * bScale)
 
     return (
       <div

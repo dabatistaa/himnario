@@ -2,8 +2,6 @@ import type { Slide } from '../data/presentation'
 import { FitText } from './FitText'
 
 export function LeccionSlideView({ slide, scale, light }: { slide: Slide; scale: number; light: boolean }) {
-  const s = (px: number) => Math.round(px * scale)
-
   const ACCENT = light ? '#1A5C8A' : '#6EDCCF'
   const MAIN   = light ? '#1A1A2E' : '#FFFFFF'
   const DIM    = light ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.65)'
