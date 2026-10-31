@@ -131,6 +131,7 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
           setRemoteOpId(m.operatorId)
         }
       } else if (msg.type === 'cmd') {
+        if (!isActiveRef.current) return
         const m = msg as { type: 'cmd'; action: string; num?: number }
         if (m.action === 'next') setSlideIdx(i => Math.min(i + 1, slides.length - 1))
         else if (m.action === 'prev') setSlideIdx(i => Math.max(i - 1, 0))
