@@ -34,7 +34,7 @@ function Code({ value, label }: { value: string; label?: string }) {
 
 function StreamDeckBtn({ label, action, n }: { label: string; action: string; n?: number }) {
   const url = `${RELAY}/cmd/${action}?sala=${SALA}${n != null ? `&n=${n}` : ''}`
-  const curl = `/usr/bin/curl -s "${url}"`
+  const curl = `curl -s "${url}"`
   const [done, setDone] = useState(false)
   const copy = () => navigator.clipboard.writeText(curl).then(() => { setDone(true); setTimeout(() => setDone(false), 2000) })
   return (
@@ -180,17 +180,21 @@ export function GuiaPage() {
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ background: '#0E1014', border: '1px solid #262A33', borderRadius: 10, padding: '14px 16px' }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: '#E7E8EC' }}>Opción A — Desde el Discord de BarRaider (sin cuenta de Elgato)</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: '#E7E8EC' }}>Opción A — Windows: plugin gratuito desde GitHub (sin cuenta)</div>
                   <ol style={{ margin: 0, paddingLeft: 18, color: '#9AA0AC', fontSize: 14, lineHeight: 1.8, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <li>Entra al Discord: <a href="http://discord.barraider.com" target="_blank" rel="noopener noreferrer" style={{ color: '#E3B260', fontSize: 13 }}>discord.barraider.com</a></li>
-                    <li>Busca el canal de SuperMacro y descarga el archivo <code style={{ color: '#E3B260', fontSize: 13 }}>.streamDeckPlugin</code></li>
-                    <li>Haz doble clic en el archivo — Stream Deck lo instala automáticamente</li>
+                    <li>Ve a <a href="https://github.com/mikepowell/streamdeck-commandline/releases" target="_blank" rel="noopener noreferrer" style={{ color: '#E3B260', fontSize: 13 }}>github.com/mikepowell/streamdeck-commandline/releases</a></li>
+                    <li>Descarga el archivo <code style={{ color: '#E3B260', fontSize: 13 }}>.streamDeckPlugin</code> de la última versión</li>
+                    <li>Haz doble clic — Stream Deck lo instala automáticamente</li>
+                    <li>En cada botón usa la acción <strong style={{ color: '#E7E8EC' }}>Command Line</strong> y pega el comando de abajo</li>
                   </ol>
+                  <p style={{ margin: '10px 0 0', fontSize: 13, color: '#6B7180' }}>
+                    Windows 10/11 incluye <code style={{ color: '#9AA0AC' }}>curl</code> de forma nativa — no hay que instalar nada más.
+                  </p>
                 </div>
                 <div style={{ background: '#0E1014', border: '1px solid #262A33', borderRadius: 10, padding: '14px 16px' }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: '#E7E8EC' }}>Opción B — Desde la tienda de Elgato</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: '#E7E8EC' }}>Opción B — Desde la tienda de Elgato (requiere cuenta)</div>
                   <p style={{ margin: 0, color: '#9AA0AC', fontSize: 14, lineHeight: 1.6 }}>
-                    Stream Deck app → ícono de tienda → busca <strong style={{ color: '#E7E8EC' }}>Super Macro</strong> de BarRaider → Instalar. (Requiere cuenta de Elgato)
+                    Stream Deck app → ícono de tienda → busca <strong style={{ color: '#E7E8EC' }}>Super Macro</strong> de BarRaider → Instalar. Luego usa la acción <strong style={{ color: '#E7E8EC' }}>Run System Command</strong>.
                   </p>
                 </div>
               </div>
