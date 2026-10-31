@@ -55,9 +55,9 @@ function flatState(s: SyncState) {
 }
 
 // ── Public API ───────────────────────────────────────────────────────────────
-export function broadcastState(state: SyncState) {
+export function broadcastState(state: SyncState, operatorId?: string) {
   ensureRelay()
-  const msg = { type: 'state', ...flatState(state) }
+  const msg = { type: 'state', ...flatState(state), ...(operatorId ? { operatorId } : {}) }
   if (usesRelay()) relaySend(msg)
   else try { getChannel().postMessage(msg) } catch (_) {}
 }

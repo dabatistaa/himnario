@@ -42,6 +42,9 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
   const [settings, setSettings] = useState<Settings>({ ...DEFAULT_SETTINGS })
   const [projLastSeen, setProjLastSeen] = useState<number | null>(null)
   const [relayConnected, setRelayConnected] = useState(false)
+  const [isActive, setIsActive] = useState(true)
+  const [remoteOpId, setRemoteOpId] = useState<string | null>(null)
+  const myId = useRef(Math.random().toString(36).slice(2, 10))
   const [copiedObs, setCopiedObs] = useState(false)
   const [salaState, setSalaState] = useState<string | null>(() => getSala())
   const [salaMode, setSalaMode] = useState<'idle' | 'join'>('idle')
@@ -96,19 +99,31 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
   const slide = slides[safeIdx] ?? null
 
   const sendState = useCallback(() => {
-    broadcastState({ num: hymnNum, idx: safeIdx, blank, scale, settings, hymnary })
-  }, [hymnNum, safeIdx, blank, scale, settings, hymnary])
+    if (!isActive) return
+    broadcastState({ num: hymnNum, idx: safeIdx, blank, scale, settings, hymnary }, myId.current)
+  }, [hymnNum, safeIdx, blank, scale, settings, hymnary, isActive])
+
+  const takeControl = useCallback(() => {
+    setIsActive(true)
+    setRemoteOpId(null)
+  }, [])
 
   useEffect(() => {
-    sendState()
+    if (isActive) sendState()
     persistState({ num: hymnNum, idx: safeIdx, scale, hymnary })
-  }, [hymnNum, safeIdx, blank, scale, settings, hymnary])
+  }, [hymnNum, safeIdx, blank, scale, settings, hymnary, isActive])
 
   useEffect(() => {
     return onMessage(msg => {
       if (msg.type === 'hello') {
         setProjLastSeen(Date.now())
         sendState()
+      } else if (msg.type === 'state') {
+        const m = msg as { type: 'state'; operatorId?: string }
+        if (m.operatorId && m.operatorId !== myId.current) {
+          setIsActive(false)
+          setRemoteOpId(m.operatorId)
+        }
       } else if (msg.type === 'cmd') {
         const m = msg as { type: 'cmd'; action: string; num?: number }
         if (m.action === 'next') setSlideIdx(i => Math.min(i + 1, slides.length - 1))
@@ -170,13 +185,13 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
   }, [digitBuffer, goToHymn])
 
   useKeyboard({
-    onNext: nextSlide,
-    onPrev: prevSlide,
-    onFirst: firstSlide,
-    onBlack: toggleBlank,
+    onNext: isActive ? nextSlide : undefined,
+    onPrev: isActive ? prevSlide : undefined,
+    onFirst: isActive ? firstSlide : undefined,
+    onBlack: isActive ? toggleBlank : undefined,
     onFullscreen: handleFullscreen,
     onEsc: () => { setSearchOpen(false); setSearchQuery(''); setDigitBuffer('') },
-    onDigit: handleDigit,
+    onDigit: isActive ? handleDigit : undefined,
   })
 
   useEffect(() => {
@@ -398,6 +413,32 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
           </div>
         )}
       </header>
+
+      {/* Banner: otro operador está controlando */}
+      {!isActive && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 12, padding: '10px 24px',
+          background: '#2B1E0E', borderBottom: '1px solid #5C3A10',
+          flexWrap: 'wrap',
+        }}>
+          <span style={{ fontSize: 14, color: '#E3B260' }}>
+            Otro dispositivo está controlando el proyector
+            {remoteOpId && <code style={{ marginLeft: 8, fontSize: 11, color: '#9AA0AC' }}>#{remoteOpId}</code>}
+          </span>
+          <button
+            type="button"
+            onClick={takeControl}
+            style={{
+              height: 34, padding: '0 16px', borderRadius: 8, border: 0,
+              background: '#E3B260', color: '#1A1408', fontFamily: 'inherit',
+              fontSize: 13, fontWeight: 700, cursor: 'pointer',
+            }}
+          >
+            Tomar control
+          </button>
+        </div>
+      )}
 
       {/* Pestañas de himnario */}
       <div style={{ display: 'flex', gap: 0, padding: narrow ? '0 12px' : '0 24px', background: '#14171D', borderBottom: '1px solid #262A33' }}>

@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 
 interface KeyboardActions {
-  onNext: () => void
-  onPrev: () => void
-  onFirst: () => void
-  onBlack: () => void
-  onFullscreen: () => void
-  onEsc: () => void
+  onNext?: () => void
+  onPrev?: () => void
+  onFirst?: () => void
+  onBlack?: () => void
+  onFullscreen?: () => void
+  onEsc?: () => void
   onDigit?: (digit: string) => void
 }
 
@@ -22,29 +22,29 @@ export function useKeyboard(actions: KeyboardActions) {
         case ' ':
         case 'PageDown':
           e.preventDefault()
-          actions.onNext()
+          actions.onNext?.()
           break
         case 'ArrowLeft':
         case 'ArrowUp':
         case 'PageUp':
           e.preventDefault()
-          actions.onPrev()
+          actions.onPrev?.()
           break
         case 'Home':
           e.preventDefault()
-          actions.onFirst()
+          actions.onFirst?.()
           break
         case 'b':
         case 'B':
         case '.':
-          actions.onBlack()
+          actions.onBlack?.()
           break
         case 'f':
         case 'F':
-          actions.onFullscreen()
+          actions.onFullscreen?.()
           break
         case 'Escape':
-          actions.onEsc()
+          actions.onEsc?.()
           break
         default:
           if (e.key >= '0' && e.key <= '9' && actions.onDigit) {
