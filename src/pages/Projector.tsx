@@ -50,7 +50,7 @@ export function ProjectorPage({ hymnsSmi, hymnsJuvenil }: ProjectorPageProps) {
       if (msg.type === 'state') {
         setRemote(msg as unknown as RemoteState)
       }
-    })
+    }, true)
   }, [salaReady])
 
   const cmd = useCallback((action: 'next' | 'prev' | 'first' | 'blank' | 'goto', num?: number) => {

@@ -89,9 +89,9 @@ export function relaySend(msg: unknown) {
   if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg))
 }
 
-export function onRelayMessage(handler: Handler): () => void {
+export function onRelayMessage(handler: Handler, replayLast = false): () => void {
   handlers.add(handler)
-  if (lastState) handler(lastState)
+  if (replayLast && lastState) handler(lastState)
   return () => handlers.delete(handler)
 }
 

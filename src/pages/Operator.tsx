@@ -43,8 +43,10 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
   const [projLastSeen, setProjLastSeen] = useState<number | null>(null)
   const [relayConnected, setRelayConnected] = useState(false)
   const [isActive, setIsActive] = useState(true)
+  const isActiveRef = useRef(true)
   const [remoteOpId, setRemoteOpId] = useState<string | null>(null)
   const myId = useRef(Math.random().toString(36).slice(2, 10))
+  const hasMounted = useRef(false)
   const [copiedObs, setCopiedObs] = useState(false)
   const [salaState, setSalaState] = useState<string | null>(() => getSala())
   const [salaMode, setSalaMode] = useState<'idle' | 'join'>('idle')
@@ -99,19 +101,22 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
   const slide = slides[safeIdx] ?? null
 
   const sendState = useCallback(() => {
-    if (!isActive) return
+    if (!isActiveRef.current) return
     broadcastState({ num: hymnNum, idx: safeIdx, blank, scale, settings, hymnary }, myId.current)
-  }, [hymnNum, safeIdx, blank, scale, settings, hymnary, isActive])
+  }, [hymnNum, safeIdx, blank, scale, settings, hymnary])
 
   const takeControl = useCallback(() => {
+    isActiveRef.current = true
     setIsActive(true)
     setRemoteOpId(null)
-  }, [])
+    broadcastState({ num: hymnNum, idx: safeIdx, blank, scale, settings, hymnary }, myId.current)
+  }, [hymnNum, safeIdx, blank, scale, settings, hymnary])
 
   useEffect(() => {
-    if (isActive) sendState()
+    if (!hasMounted.current) { hasMounted.current = true; return }
+    if (isActiveRef.current) sendState()
     persistState({ num: hymnNum, idx: safeIdx, scale, hymnary })
-  }, [hymnNum, safeIdx, blank, scale, settings, hymnary, isActive])
+  }, [hymnNum, safeIdx, blank, scale, settings, hymnary])
 
   useEffect(() => {
     return onMessage(msg => {
@@ -121,6 +126,7 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
       } else if (msg.type === 'state') {
         const m = msg as { type: 'state'; operatorId?: string }
         if (m.operatorId && m.operatorId !== myId.current) {
+          isActiveRef.current = false
           setIsActive(false)
           setRemoteOpId(m.operatorId)
         }
@@ -414,18 +420,31 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
         )}
       </header>
 
-      {/* Banner: otro operador está controlando */}
-      {!isActive && (
+      {/* Banner de estado de control */}
+      {isActive ? (
+        sala && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '6px 24px', background: '#0D1F14', borderBottom: '1px solid #1B3A24',
+          }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#5BD18B', flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: '#5BD18B', fontWeight: 600 }}>Este dispositivo tiene el control</span>
+          </div>
+        )
+      ) : (
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           gap: 12, padding: '10px 24px',
           background: '#2B1E0E', borderBottom: '1px solid #5C3A10',
           flexWrap: 'wrap',
         }}>
-          <span style={{ fontSize: 14, color: '#E3B260' }}>
-            Otro dispositivo está controlando el proyector
-            {remoteOpId && <code style={{ marginLeft: 8, fontSize: 11, color: '#9AA0AC' }}>#{remoteOpId}</code>}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#E3B260', flexShrink: 0 }} />
+            <span style={{ fontSize: 14, color: '#E3B260', fontWeight: 600 }}>
+              Otro dispositivo está controlando
+              {remoteOpId && <code style={{ marginLeft: 8, fontSize: 11, color: '#9AA0AC', fontWeight: 400 }}>#{remoteOpId.slice(0, 6)}</code>}
+            </span>
+          </div>
           <button
             type="button"
             onClick={takeControl}

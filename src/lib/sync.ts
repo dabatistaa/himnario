@@ -81,10 +81,10 @@ type HelloMsg = { type: 'hello' }
 type CmdMsg = { type: 'cmd'; action: string; num?: number }
 type Msg = StateMsg | HelloMsg | CmdMsg
 
-export function onMessage(handler: (msg: Msg) => void): () => void {
+export function onMessage(handler: (msg: Msg) => void, replayLast = false): () => void {
   ensureRelay()
   if (usesRelay()) {
-    return onRelayMessage(msg => handler(msg as Msg))
+    return onRelayMessage(msg => handler(msg as Msg), replayLast)
   }
   const ch = getChannel()
   const listener = (e: MessageEvent<Msg>) => handler(e.data)
