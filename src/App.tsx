@@ -3,6 +3,8 @@ import { useHymns } from './hooks/useHymns'
 import { OperatorPage } from './pages/Operator'
 import { ProjectorPage } from './pages/Projector'
 import { GuiaPage } from './pages/Guia'
+import { LeccionOperatorPage } from './pages/LeccionOperator'
+import { LeccionProjectorPage } from './pages/LeccionProjector'
 import type { Hymn, HymnSection } from './types'
 
 function normalizeSmi(raw: unknown): Hymn[] {
@@ -52,6 +54,8 @@ export default function App() {
         <Route path="/" element={<OperatorPage hymnsSmi={hymnsSmi} hymnsJuvenil={hymnsJuvenil} />} />
         <Route path="/proyector" element={<ProjectorPage hymnsSmi={hymnsSmi} hymnsJuvenil={hymnsJuvenil} />} />
         <Route path="/guia" element={<GuiaPage />} />
+        <Route path="/leccion" element={<LeccionOperatorPage />} />
+        <Route path="/leccion-proyector" element={<LeccionProjectorPage />} />
       </Routes>
     </BrowserRouter>
   )
