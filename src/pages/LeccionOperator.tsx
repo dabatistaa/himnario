@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { getCurrentBook, getLessons, getLesson, pickCurrentLesson } from '../services/lessons'
 import {
   broadcastLeccionState,
+  onLeccionMessage,
   getSala,
 } from '../lib/syncLesson'
 import {
@@ -65,6 +66,7 @@ export function LeccionOperatorPage() {
   const [blank, setBlank] = useState(false)
   const [textScale, setTextScale] = useState(1)
   const myId = useRef(Math.random().toString(36).slice(2, 10))
+  const stateRef = useRef<{ lessonId: string; config: PresentationConfig; slideIdx: number; blank: boolean; coverUrl: string | null; textScale: number } | null>(null)
 
   const updateConfig = (partial: Partial<PresentationConfig>) =>
     setConfig(c => ({ ...c, ...partial }))
@@ -104,6 +106,11 @@ export function LeccionOperatorPage() {
     if (slides.length > 0) setSlideIdx(i => Math.min(i, slides.length - 1))
   }, [slides.length])
 
+  // Mantener ref con estado actual para responder a hello sin stale closures
+  stateRef.current = selectedLessonId
+    ? { lessonId: selectedLessonId, config, slideIdx, blank, coverUrl: book?.coverUrl ?? null, textScale }
+    : null
+
   // Broadcast al proyector
   useEffect(() => {
     if (!selectedLessonId) return
@@ -118,10 +125,19 @@ export function LeccionOperatorPage() {
     broadcastLeccionState(state, myId.current)
   }, [selectedLessonId, config, slideIdx, blank, textScale, book?.coverUrl])
 
+  // Responder a hello del proyector (OBS u otra ventana)
+  useEffect(() => {
+    return onLeccionMessage((msg) => {
+      if (msg.type === 'leccion-hello' && stateRef.current) {
+        broadcastLeccionState(stateRef.current as LeccionSyncState, myId.current)
+      }
+    })
+  }, [])
+
   const sala = getSala()
   const projUrl = sala
-    ? `${window.location.origin}/leccion-proyector?sala=${sala}`
-    : `${window.location.origin}/leccion-proyector`
+    ? `${window.location.origin}/proyector?sala=${sala}`
+    : `${window.location.origin}/proyector`
 
   const slide = slides[slideIdx]
 

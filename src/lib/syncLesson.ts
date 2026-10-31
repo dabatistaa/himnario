@@ -74,19 +74,22 @@ function startBcListen() {
   getCh().onmessage = (e) => listeners.forEach(fn => fn(e.data))
 }
 
-export function onLeccionMessage(fn: LeccionListener, isProjector = false): () => void {
-  startBcListen()
+export function onLeccionMessage(fn: LeccionListener, _isProjector = false): () => void {
+  const sala = getSala()
   let unsubRelay: (() => void) | null = null
-  if (isProjector) {
-    const sala = getSala()
-    if (sala) {
-      ensureRelay()
-      unsubRelay = onRelayMessage((msg: any) => {
-        if (msg.type?.startsWith('leccion-')) fn(msg)
-      })
-    }
+
+  if (sala) {
+    // Con sala: solo relay (igual que sync.ts cuando hay relay)
+    ensureRelay()
+    unsubRelay = onRelayMessage((msg: any) => {
+      if (msg.type?.startsWith('leccion-')) fn(msg)
+    })
+  } else {
+    // Sin sala: BroadcastChannel (mismo navegador)
+    startBcListen()
+    listeners.push(fn)
   }
-  listeners.push(fn)
+
   return () => {
     const i = listeners.indexOf(fn)
     if (i >= 0) listeners.splice(i, 1)
