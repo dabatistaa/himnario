@@ -1,6 +1,7 @@
 type Handler = (msg: unknown) => void
 
 const handlers = new Set<Handler>()
+let lastState: unknown = null
 let ws: WebSocket | null = null
 let salaId: string | null = null
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
@@ -74,7 +75,11 @@ function connect() {
   ws = new WebSocket(`${RELAY_WS}/ws?sala=${encodeURIComponent(salaId)}`)
   ws.onopen = () => { if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null } }
   ws.onmessage = ({ data }) => {
-    try { const msg = JSON.parse(data as string); handlers.forEach(h => h(msg)) } catch {}
+    try {
+      const msg = JSON.parse(data as string)
+      if ((msg as { type?: string }).type === 'state') lastState = msg
+      handlers.forEach(h => h(msg))
+    } catch {}
   }
   ws.onclose = () => { if (!stopped) reconnectTimer = setTimeout(connect, 2000) }
   ws.onerror = () => ws?.close()
@@ -86,6 +91,7 @@ export function relaySend(msg: unknown) {
 
 export function onRelayMessage(handler: Handler): () => void {
   handlers.add(handler)
+  if (lastState) handler(lastState)
   return () => handlers.delete(handler)
 }
 
