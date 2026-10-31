@@ -4,11 +4,13 @@ import { LeccionSlideView } from '../components/LeccionSlideView'
 import { buildSlides } from '../lib/slides'
 import { broadcastCmd, broadcastHello, onMessage, getSala, setSala, resetRelay } from '../lib/sync'
 import { onLeccionMessage, broadcastLeccionHello, resetLeccionRelay } from '../lib/syncLesson'
+import { onBibleMessage, broadcastBibleHello } from '../lib/syncBible'
 import { getLesson } from '../services/lessons'
 import { buildSlides as buildLeccionSlides, backgroundCss, isLightBackground, defaultConfig } from '../data/presentation'
 import type { Hymn, HymnaryId, Slide } from '../types'
 import type { Lesson } from '../types/lesson'
 import type { LeccionSyncState } from '../lib/syncLesson'
+import type { BibleSyncState } from '../lib/syncBible'
 
 interface ProjectorPageProps {
   hymnsSmi: Hymn[]
@@ -35,11 +37,12 @@ export function ProjectorPage({ hymnsSmi, hymnsJuvenil }: ProjectorPageProps) {
   const bufTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
 
-  // ── Lesson state ────────────────────────────────────────────────────────────
-  const [mode, setMode] = useState<'hymn' | 'lesson'>('hymn')
+  // ── Lesson / Bible state ─────────────────────────────────────────────────────
+  const [mode, setMode] = useState<'hymn' | 'lesson' | 'bible'>('hymn')
   const [leccionRemote, setLeccionRemote] = useState<LeccionSyncState | null>(null)
   const [lesson, setLesson] = useState<Lesson | null>(null)
   const loadedLessonId = useRef('')
+  const [bibleRemote, setBibleRemote] = useState<BibleSyncState | null>(null)
 
   const handleJoin = () => {
     const code = joinInput.trim().toUpperCase()
@@ -48,6 +51,7 @@ export function ProjectorPage({ hymnsSmi, hymnsJuvenil }: ProjectorPageProps) {
     resetRelay()
     resetLeccionRelay()
     setSalaReady(true)
+    // syncBible usa initRelay vía ensureRelay la primera vez que se llame
   }
 
   // ── Hymn sync ───────────────────────────────────────────────────────────────
@@ -99,6 +103,31 @@ export function ProjectorPage({ hymnsSmi, hymnsJuvenil }: ProjectorPageProps) {
     getLesson(leccionRemote.lessonId).then(setLesson).catch(console.error)
   }, [leccionRemote?.lessonId])
 
+  // ── Bible sync ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!salaReady) return
+    broadcastBibleHello()
+    const t = setInterval(broadcastBibleHello, 3000)
+    return () => clearInterval(t)
+  }, [salaReady])
+
+  useEffect(() => {
+    if (!salaReady) return
+    return onBibleMessage(msg => {
+      if (msg.type === 'bible-state') {
+        setMode('bible')
+        setBibleRemote({
+          verse: msg.verse,
+          reference: msg.reference ?? '',
+          text: msg.text ?? '',
+          blank: msg.blank ?? false,
+          textScale: msg.textScale ?? 1,
+          theme: msg.theme ?? 'dark',
+        })
+      }
+    })
+  }, [salaReady])
+
   // ── Commands (hymn mode) ────────────────────────────────────────────────────
   const cmd = useCallback((action: 'next' | 'prev' | 'first' | 'blank' | 'goto', num?: number) => {
     broadcastCmd(action, num)
@@ -118,6 +147,10 @@ export function ProjectorPage({ hymnsSmi, hymnsJuvenil }: ProjectorPageProps) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const k = e.key
+      if (mode === 'bible') {
+        if (k === 'f' || k === 'F') { e.preventDefault(); toggleFullscreen() }
+        return
+      }
       if (mode === 'lesson') {
         if (k === 'ArrowRight' || k === 'ArrowDown' || k === ' ' || k === 'PageDown') {
           e.preventDefault()
@@ -207,6 +240,45 @@ export function ProjectorPage({ hymnsSmi, hymnsJuvenil }: ProjectorPageProps) {
             fontSize: 16, fontWeight: 700, cursor: 'pointer',
           }}>Conectar</button>
         </form>
+      </div>
+    )
+  }
+
+  // ── Bible mode render ───────────────────────────────────────────────────────
+  if (mode === 'bible' && bibleRemote) {
+    if (bibleRemote.blank) {
+      return <div style={{ width: '100%', height: '100vh', background: '#000' }} />
+    }
+    const bLight = bibleRemote.theme === 'light'
+    const bBg     = bLight ? '#F5F0E8' : '#0D1B2A'
+    const bMain   = bLight ? '#1A1A2E' : '#FFFFFF'
+    const bAccent = bLight ? '#1A5C8A' : '#6EDCCF'
+    const bScale  = bibleRemote.textScale ?? 1
+    const s = (px: number) => Math.round(px * bScale)
+
+    return (
+      <div
+        style={{
+          width: '100%', height: '100vh', display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          background: bBg, fontFamily: "'Atkinson Hyperlegible', system-ui, sans-serif",
+          padding: `${s(48)}px ${s(80)}px`, boxSizing: 'border-box',
+          overflow: 'hidden',
+        }}
+        onClick={toggleFullscreen}
+      >
+        <div style={{ maxWidth: '100%', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <div style={{ fontSize: s(16), fontWeight: 700, color: bAccent, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: s(24) }}>
+            {bibleRemote.reference}
+          </div>
+          <div style={{
+            fontSize: s(46), fontWeight: 600, color: bMain, lineHeight: 1.45,
+            whiteSpace: 'pre-line',
+            display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 9, overflow: 'hidden',
+          } as React.CSSProperties}>
+            {bibleRemote.text}
+          </div>
+        </div>
       </div>
     )
   }

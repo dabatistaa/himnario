@@ -5,6 +5,7 @@ import { ProjectorPage } from './pages/Projector'
 import { GuiaPage } from './pages/Guia'
 import { LeccionOperatorPage } from './pages/LeccionOperator'
 import { LeccionProjectorPage } from './pages/LeccionProjector'
+import { BibliaOperatorPage } from './pages/BibliaOperator'
 import type { Hymn, HymnSection } from './types'
 
 function normalizeSmi(raw: unknown): Hymn[] {
@@ -56,6 +57,7 @@ export default function App() {
         <Route path="/guia" element={<GuiaPage />} />
         <Route path="/leccion" element={<LeccionOperatorPage />} />
         <Route path="/leccion-proyector" element={<LeccionProjectorPage />} />
+        <Route path="/biblia" element={<BibliaOperatorPage />} />
       </Routes>
     </BrowserRouter>
   )

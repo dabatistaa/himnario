@@ -430,6 +430,10 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
               <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
               Lección
             </a>
+            <a href="/biblia" style={{ ...btnBase, height: 44, padding: '0 14px', borderRadius: 10, border: '1px solid #333844', background: '#1A1D24', color: '#9AA0AC', textDecoration: 'none', fontSize: 14, gap: 6 }}>
+              <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              Biblia
+            </a>
             <a href={`/guia?sala=${sala ?? ''}`} target="_blank" rel="noopener noreferrer" style={{ ...btnBase, height: 44, padding: '0 14px', borderRadius: 10, border: '1px solid #333844', background: '#1A1D24', color: '#9AA0AC', textDecoration: 'none', fontSize: 14, gap: 6 }}>
               <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               Guía OBS
