@@ -285,15 +285,15 @@ export function BibliaOperatorPage({ embedded = false }: { embedded?: boolean })
                 </div>
               )}
               <div style={{ flex: 1, minHeight: 0, padding: '12px 16px 6px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                <div style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: pAccent, letterSpacing: '0.1em', textTransform: 'uppercase', textAlign: 'center', marginBottom: 8 }}>
+                <div style={{ flexShrink: 0, fontSize: 13, fontWeight: 700, color: pAccent, letterSpacing: '0.1em', textTransform: 'uppercase', textAlign: 'center', marginBottom: 8 }}>
                   {previewRef}
                 </div>
-                <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                   <FitText
                     maxVmin={11 * textScale}
                     minVmin={2.5}
                     lineHeight={1.35}
-                    style={{ fontWeight: 600, color: pMain, textAlign: 'center' }}
+                    style={{ fontWeight: 600, color: pMain, textAlign: 'center', height: 'auto' }}
                   >
                     {previewText || ' '}
                   </FitText>
