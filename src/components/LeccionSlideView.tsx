@@ -1,4 +1,5 @@
 import type { Slide } from '../data/presentation'
+import { FitText } from './FitText'
 
 export function LeccionSlideView({ slide, scale, light }: { slide: Slide; scale: number; light: boolean }) {
   const s = (px: number) => Math.round(px * scale)
@@ -7,73 +8,85 @@ export function LeccionSlideView({ slide, scale, light }: { slide: Slide; scale:
   const MAIN   = light ? '#1A1A2E' : '#FFFFFF'
   const DIM    = light ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.65)'
 
-  const base: React.CSSProperties = {
+  const wrap: React.CSSProperties = {
     flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: `${s(48)}px ${s(60)}px ${s(56)}px`,
-  }
-  const inner: React.CSSProperties = {
-    maxWidth: '100%',
-    width: '100%',
+    minHeight: 0,
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
-    textAlign: 'center',
+    padding: `3vmin 5vmin`,
+    overflow: 'hidden',
   }
   const labelStyle: React.CSSProperties = {
-    fontSize: s(16),
+    flexShrink: 0,
+    fontSize: `${1.4 * scale}vmin`,
     fontWeight: 700,
     color: ACCENT,
     letterSpacing: '0.12em',
-    textTransform: 'uppercase',
-    marginBottom: s(20),
+    textTransform: 'uppercase' as const,
+    textAlign: 'center',
+    marginBottom: '2vmin',
   }
   const paginationStyle: React.CSSProperties = {
-    fontSize: s(15),
-    marginTop: s(24),
+    flexShrink: 0,
+    fontSize: `${1.2 * scale}vmin`,
+    marginTop: '1.5vmin',
     color: DIM,
+    textAlign: 'center',
   }
-  const clamp = (lines: number): React.CSSProperties => ({
-    display: '-webkit-box',
-    WebkitBoxOrient: 'vertical',
-    WebkitLineClamp: lines,
+  const textArea: React.CSSProperties = {
+    flex: 1,
+    minHeight: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     overflow: 'hidden',
-  } as React.CSSProperties)
+  }
 
   if (slide.kind === 'lessonTitle') {
     return (
-      <div style={base}>
-        <div style={inner}>
-          <div style={labelStyle}>Lección {slide.lessonNumber}</div>
-          <div style={{ fontSize: s(58), fontWeight: 800, color: MAIN, lineHeight: 1.1, marginBottom: s(20), ...clamp(4) }}>
-            {slide.title}
-          </div>
-          {slide.date && <div style={{ fontSize: s(20), color: DIM }}>{slide.date}</div>}
+      <div style={wrap}>
+        <div style={labelStyle}>Lección {slide.lessonNumber}</div>
+        <div style={textArea}>
+          <FitText maxVmin={10 * scale} minVmin={2.5} lineHeight={1.1}
+            style={{ fontWeight: 800, color: MAIN, textAlign: 'center' }}>
+            {slide.title ?? ''}
+          </FitText>
         </div>
+        {slide.date && (
+          <div style={{ flexShrink: 0, textAlign: 'center', fontSize: `${1.4 * scale}vmin`, color: DIM, marginTop: '1.5vmin' }}>
+            {slide.date}
+          </div>
+        )}
       </div>
     )
   }
 
   if (slide.kind === 'introduction') {
     return (
-      <div style={base}>
-        <div style={inner}>
-          <div style={labelStyle}>Introducción</div>
-          <div style={{ fontSize: s(34), fontWeight: 500, color: MAIN, lineHeight: 1.55, ...clamp(10) }}>{slide.text}</div>
-          {slide.total && slide.total > 1 && <div style={paginationStyle}>{slide.page} / {slide.total}</div>}
+      <div style={wrap}>
+        <div style={labelStyle}>Introducción</div>
+        <div style={textArea}>
+          <FitText maxVmin={8 * scale} minVmin={2.5} lineHeight={1.55}
+            style={{ fontWeight: 400, color: MAIN, textAlign: 'center' }}>
+            {slide.text ?? ''}
+          </FitText>
         </div>
+        {slide.total && slide.total > 1 && <div style={paginationStyle}>{slide.page} / {slide.total}</div>}
       </div>
     )
   }
 
   if (slide.kind === 'question') {
     return (
-      <div style={base}>
-        <div style={inner}>
-          <div style={{ fontSize: s(40), fontWeight: 800, color: ACCENT, lineHeight: 1, marginBottom: s(20) }}>{slide.number}</div>
-          <div style={{ fontSize: s(42), fontWeight: 700, color: MAIN, lineHeight: 1.3, ...clamp(7) }}>{slide.text}</div>
+      <div style={wrap}>
+        <div style={{ ...labelStyle, fontSize: `${2.2 * scale}vmin`, fontWeight: 800, color: ACCENT }}>
+          {slide.number}
+        </div>
+        <div style={textArea}>
+          <FitText maxVmin={9 * scale} minVmin={2.5} lineHeight={1.3}
+            style={{ fontWeight: 700, color: MAIN, textAlign: 'center' }}>
+            {slide.text ?? ''}
+          </FitText>
         </div>
       </div>
     )
@@ -81,37 +94,50 @@ export function LeccionSlideView({ slide, scale, light }: { slide: Slide; scale:
 
   if (slide.kind === 'verse') {
     return (
-      <div style={base}>
-        <div style={inner}>
-          <div style={{ ...labelStyle, marginBottom: s(20) }}>{slide.reference}</div>
-          <div style={{ fontSize: s(36), fontWeight: 500, color: MAIN, lineHeight: 1.6, ...clamp(9) }}>{slide.text}</div>
-          {slide.total && slide.total > 1 && <div style={paginationStyle}>{slide.page} / {slide.total}</div>}
+      <div style={wrap}>
+        <div style={labelStyle}>{slide.reference}</div>
+        <div style={textArea}>
+          <FitText maxVmin={8.5 * scale} minVmin={2.5} lineHeight={1.6}
+            style={{ fontWeight: 400, color: MAIN, textAlign: 'center' }}>
+            {slide.text ?? ''}
+          </FitText>
         </div>
+        {slide.total && slide.total > 1 && <div style={paginationStyle}>{slide.page} / {slide.total}</div>}
       </div>
     )
   }
 
   if (slide.kind === 'note') {
     return (
-      <div style={base}>
-        <div style={inner}>
-          <div style={labelStyle}>Nota</div>
-          <div style={{ fontSize: s(34), fontWeight: 500, color: MAIN, lineHeight: 1.6, fontStyle: 'italic', ...clamp(9) }}>{slide.text}</div>
-          {slide.author && <div style={{ fontSize: s(18), marginTop: s(20), color: DIM }}>— {slide.author}</div>}
-          {slide.total && slide.total > 1 && <div style={paginationStyle}>{slide.page} / {slide.total}</div>}
+      <div style={wrap}>
+        <div style={labelStyle}>Nota</div>
+        <div style={textArea}>
+          <FitText maxVmin={8 * scale} minVmin={2.5} lineHeight={1.6}
+            style={{ fontWeight: 400, fontStyle: 'italic', color: MAIN, textAlign: 'center' }}>
+            {slide.text ?? ''}
+          </FitText>
         </div>
+        {slide.author && (
+          <div style={{ flexShrink: 0, textAlign: 'center', fontSize: `${1.3 * scale}vmin`, color: DIM, marginTop: '1.5vmin' }}>
+            — {slide.author}
+          </div>
+        )}
+        {slide.total && slide.total > 1 && <div style={paginationStyle}>{slide.page} / {slide.total}</div>}
       </div>
     )
   }
 
   if (slide.kind === 'additionalStudy') {
     return (
-      <div style={base}>
-        <div style={inner}>
-          <div style={labelStyle}>Estudio adicional</div>
-          <div style={{ fontSize: s(32), fontWeight: 500, color: MAIN, lineHeight: 1.6, ...clamp(11) }}>{slide.text}</div>
-          {slide.total && slide.total > 1 && <div style={paginationStyle}>{slide.page} / {slide.total}</div>}
+      <div style={wrap}>
+        <div style={labelStyle}>Estudio adicional</div>
+        <div style={textArea}>
+          <FitText maxVmin={8 * scale} minVmin={2.5} lineHeight={1.6}
+            style={{ fontWeight: 400, color: MAIN, textAlign: 'center' }}>
+            {slide.text ?? ''}
+          </FitText>
         </div>
+        {slide.total && slide.total > 1 && <div style={paginationStyle}>{slide.page} / {slide.total}</div>}
       </div>
     )
   }

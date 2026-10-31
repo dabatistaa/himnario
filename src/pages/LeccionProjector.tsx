@@ -162,7 +162,7 @@ export function LeccionProjectorPage() {
 
   return (
     <div style={{
-      minHeight: '100vh', display: 'flex', flexDirection: 'column',
+      height: '100vh', display: 'flex', flexDirection: 'column',
       background: bg, fontFamily: 'Atkinson Hyperlegible, sans-serif',
       position: 'relative', overflow: 'hidden',
     }}>

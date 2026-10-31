@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Stage } from '../components/Stage'
 import { LeccionSlideView } from '../components/LeccionSlideView'
+import { FitText } from '../components/FitText'
 import { buildSlides } from '../lib/slides'
 import { broadcastCmd, broadcastHello, onMessage, getSala, setSala, resetRelay } from '../lib/sync'
 import { onLeccionMessage, broadcastLeccionHello, resetLeccionRelay } from '../lib/syncLesson'
@@ -260,24 +261,31 @@ export function ProjectorPage({ hymnsSmi, hymnsJuvenil }: ProjectorPageProps) {
       <div
         style={{
           width: '100%', height: '100vh', display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
           background: bBg, fontFamily: "'Atkinson Hyperlegible', system-ui, sans-serif",
-          padding: `${s(48)}px ${s(80)}px`, boxSizing: 'border-box',
-          overflow: 'hidden',
+          padding: `3vmin 5vmin`, boxSizing: 'border-box', overflow: 'hidden',
         }}
         onClick={toggleFullscreen}
       >
-        <div style={{ maxWidth: '100%', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <div style={{ fontSize: s(16), fontWeight: 700, color: bAccent, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: s(24) }}>
-            {bibleRemote.reference}
-          </div>
-          <div style={{
-            fontSize: s(46), fontWeight: 600, color: bMain, lineHeight: 1.45,
-            whiteSpace: 'pre-line',
-            display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 9, overflow: 'hidden',
-          } as React.CSSProperties}>
+        {/* Referencia fija arriba */}
+        <div style={{
+          flexShrink: 0, textAlign: 'center',
+          fontSize: `${1.4 * bScale}vmin`, fontWeight: 700,
+          color: bAccent, letterSpacing: '0.12em', textTransform: 'uppercase',
+          marginBottom: '2vmin',
+        }}>
+          {bibleRemote.reference}
+        </div>
+
+        {/* Texto auto-fit ocupa el resto */}
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <FitText
+            maxVmin={11 * bScale}
+            minVmin={2.5}
+            lineHeight={1.35}
+            style={{ fontWeight: 600, color: bMain, textAlign: 'center' }}
+          >
             {bibleRemote.text}
-          </div>
+          </FitText>
         </div>
       </div>
     )
@@ -314,7 +322,7 @@ export function ProjectorPage({ hymnsSmi, hymnsJuvenil }: ProjectorPageProps) {
       <div style={{
         width: '100%', height: '100vh', display: 'flex', flexDirection: 'column',
         background: bg, fontFamily: "'Atkinson Hyperlegible', system-ui, sans-serif",
-        position: 'relative', overflow: 'hidden',
+        position: 'relative', overflow: 'hidden', boxSizing: 'border-box',
       }}>
         {config.overlayOpacity > 0 && (
           <div style={{
