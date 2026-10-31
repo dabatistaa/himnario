@@ -485,11 +485,96 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
         ))}
       </div>
 
-      {/* Main */}
-      <main style={{ flex: '1 1 auto', minHeight: 0, display: 'flex', flexWrap: 'wrap', gap: narrow ? 10 : 20, padding: narrow ? '12px 12px' : '20px 24px', overflow: 'auto' }}>
+      {/* ── Layout móvil ── */}
+      {narrow ? (
+        <div style={{ flex: '1 1 auto', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+          {/* Himno actual: número + título + flechas */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderBottom: '1px solid #262A33' }}>
+            <button type="button" onClick={() => { const prev = hymns[hymnIndex - 1]; if (prev) goToHymn(prev.number) }} aria-label="Himno anterior" disabled={hymnIndex <= 0} style={{ ...btnBase, height: 40, width: 40, borderRadius: 8, border: '1px solid #333844', background: '#1A1D24', color: '#E7E8EC', opacity: hymnIndex <= 0 ? 0.3 : 1, flexShrink: 0 }}>
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                <span style={{ fontSize: 22, fontWeight: 700, color: '#E3B260', fontVariantNumeric: 'tabular-nums' }}>{hymn?.number}</span>
+                <span style={{ fontSize: 18, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hymn?.title}</span>
+              </div>
+              {hymn?.author && <span style={{ fontSize: 12, color: '#9AA0AC' }}>{hymn.author}</span>}
+            </div>
+            <button type="button" onClick={() => { const next = hymns[hymnIndex + 1]; if (next) goToHymn(next.number) }} aria-label="Himno siguiente" disabled={hymnIndex >= hymns.length - 1} style={{ ...btnBase, height: 40, width: 40, borderRadius: 8, border: '1px solid #333844', background: '#1A1D24', color: '#E7E8EC', opacity: hymnIndex >= hymns.length - 1 ? 0.3 : 1, flexShrink: 0 }}>
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
+
+          {/* Tarjeta: texto actual proyectado */}
+          <div style={{ flex: '1 1 auto', overflow: 'auto', padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {slide ? (
+              <div style={{ borderRadius: 14, border: `2px solid ${blank ? '#333844' : '#E3B260'}`, background: blank ? '#111418' : '#1C2030', padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: blank ? '#6B7180' : '#E3B260' }}>
+                    {blank ? '■ Pantalla negra' : slide.label}
+                  </span>
+                  <span style={{ fontSize: 12, color: '#6B7180', fontVariantNumeric: 'tabular-nums' }}>{safeIdx + 1} / {slides.length}</span>
+                </div>
+                <p style={{ margin: 0, fontSize: 18, lineHeight: 1.6, color: blank ? '#6B7180' : '#E7E8EC', whiteSpace: 'pre-wrap', fontStyle: blank ? 'italic' : 'normal' }}>
+                  {blank ? 'El proyector no está mostrando nada' : slide.text}
+                </p>
+              </div>
+            ) : (
+              <div style={{ borderRadius: 14, border: '1px solid #262A33', background: '#14171D', padding: '24px 16px', textAlign: 'center', color: '#6B7180', fontSize: 15 }}>
+                Sin himno seleccionado
+              </div>
+            )}
+
+            {/* Lista de secciones colapsable */}
+            <details style={{ borderRadius: 10, border: '1px solid #262A33', background: '#14171D' }}>
+              <summary style={{ padding: '12px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#9AA0AC', letterSpacing: '0.08em', textTransform: 'uppercase', listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span>Todas las secciones</span>
+                <span style={{ fontSize: 11, color: '#6B7180', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>{slides.length} secciones</span>
+              </summary>
+              <div style={{ padding: '4px 8px 8px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {slides.map((s, i) => {
+                  const active = i === safeIdx
+                  return (
+                    <button key={i} type="button" onClick={() => setSlideIdx(i)} aria-current={active ? 'true' : 'false'}
+                      style={{ ...btnBase, flexDirection: 'column', alignItems: 'flex-start', gap: 3, width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 8, border: `1px solid ${active ? '#E3B260' : '#262A33'}`, background: active ? '#1C2030' : 'transparent', color: '#E7E8EC' }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: active ? '#E3B260' : '#9AA0AC' }}>{s.label}</span>
+                      <span style={{ fontSize: 13, lineHeight: 1.35, color: '#C9CCD3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{s.text.split('\n').slice(0, 1).join('')}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </details>
+          </div>
+
+          {/* Barra de acciones fija abajo */}
+          <div style={{ padding: '10px 12px', borderTop: '1px solid #262A33', background: '#14171D', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* Anterior / Siguiente */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button type="button" onClick={prevSlide} disabled={safeIdx === 0} style={{ ...btnBase, flex: 1, height: 56, gap: 8, borderRadius: 12, border: '1px solid #333844', background: '#1A1D24', color: '#E7E8EC', fontSize: 16, opacity: safeIdx === 0 ? 0.35 : 1 }}>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                Anterior
+              </button>
+              <button type="button" onClick={nextSlide} disabled={safeIdx >= slides.length - 1} style={{ ...btnBase, flex: 1, height: 56, gap: 8, borderRadius: 12, border: 0, background: '#2B3140', color: '#FFFFFF', fontSize: 16, fontWeight: 700, opacity: safeIdx >= slides.length - 1 ? 0.35 : 1 }}>
+                Siguiente
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+            </div>
+            {/* Pantalla negra */}
+            <button type="button" onClick={toggleBlank} aria-pressed={blank} style={{ ...btnBase, height: 44, borderRadius: 10, border: '1px solid #333844', background: blank ? '#E7E8EC' : '#1A1D24', color: blank ? '#111318' : '#9AA0AC', fontSize: 14, gap: 8 }}>
+              <span style={{ fontSize: 16 }}>■</span>
+              {blank ? 'Mostrar proyector' : 'Pantalla negra'}
+            </button>
+          </div>
+        </div>
+
+      ) : (
+
+      /* ── Layout escritorio ── */
+      <main style={{ flex: '1 1 auto', minHeight: 0, display: 'flex', flexWrap: 'wrap', gap: 20, padding: '20px 24px', overflow: 'auto' }}>
 
         {/* Sección izquierda */}
-        <section style={{ flex: '999 1 0px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: narrow ? 8 : 14 }}>
+        <section style={{ flex: '999 1 0px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
 
           {/* Encabezado del himno */}
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
@@ -510,8 +595,8 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
             </button>
           </div>
 
-          {/* Vista previa 16:9 — oculta en modo dock */}
-          {!narrow && <Stage
+          {/* Vista previa 16:9 */}
+          <Stage
             slide={slide}
             slides={slides}
             currentIndex={safeIdx}
@@ -527,7 +612,7 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
               borderRadius: 14,
               border: '1px solid #262A33',
             }}
-          />}
+          />
 
           {/* Controles de navegación */}
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
@@ -547,15 +632,13 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
                 Ir al {digitBuffer} ↵
               </span>
             )}
-            {!narrow && (
-              <span style={{ marginLeft: 'auto', fontSize: 13, color: '#9AA0AC', lineHeight: 1.5 }}>
-                → o Espacio: siguiente · ←: anterior · escribe un número + Enter · B: negro · F: proyectar · Esc: salir
-              </span>
-            )}
+            <span style={{ marginLeft: 'auto', fontSize: 13, color: '#9AA0AC', lineHeight: 1.5 }}>
+              → o Espacio: siguiente · ←: anterior · escribe un número + Enter · B: negro · F: proyectar · Esc: salir
+            </span>
           </div>
 
-          {/* Ajustes — ocultos en modo dock */}
-          {!narrow && <details style={{ borderRadius: 10, border: '1px solid #262A33', background: '#14171D' }}>
+          {/* Ajustes */}
+          <details style={{ borderRadius: 10, border: '1px solid #262A33', background: '#14171D' }}>
             <summary style={{ padding: '12px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#9AA0AC', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Pantalla</summary>
             <div style={{ padding: '4px 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
@@ -573,11 +656,11 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
                 </label>
               ))}
             </div>
-          </details>}
+          </details>
         </section>
 
         {/* Columna derecha: Orden del himno */}
-        <aside style={{ flex: narrow ? '1 1 100%' : '1 1 300px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: narrow ? 6 : 10, overflowY: 'auto' }}>
+        <aside style={{ flex: '1 1 300px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto' }}>
           <h2 style={{ margin: 0, fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9AA0AC' }}>Orden del himno</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {slides.map((s, i) => {
@@ -604,6 +687,7 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
           </div>
         </aside>
       </main>
+      )}
     </div>
   )
 }
