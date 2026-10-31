@@ -3,12 +3,10 @@ import { Link } from 'react-router-dom'
 import { getCurrentBook, getLessons, getLesson, pickCurrentLesson } from '../services/lessons'
 import {
   broadcastLeccionState,
-  DEFAULT_LECCION_STATE,
   getSala,
 } from '../lib/syncLesson'
 import {
   BACKGROUND_PRESETS,
-  DEFAULT_PRESET_ID,
   buildSlides,
   defaultConfig,
   getSlideLabel,
@@ -126,9 +124,6 @@ export function LeccionOperatorPage() {
     : `${window.location.origin}/leccion-proyector`
 
   const slide = slides[slideIdx]
-  const bgPreset = config.background.type === 'preset'
-    ? BACKGROUND_PRESETS.find(p => p.id === config.background.id) ?? BACKGROUND_PRESETS[0]
-    : null
 
   if (loading) {
     return (
@@ -332,7 +327,7 @@ export function LeccionOperatorPage() {
                     background: preset.colors.length === 1
                       ? preset.colors[0]
                       : `linear-gradient(to bottom, ${preset.colors.join(', ')})`,
-                    outline: config.background.type === 'preset' && config.background.id === preset.id
+                    outline: config.background.type === 'preset' && (config.background as { type: 'preset'; id: string }).id === preset.id
                       ? '2px solid #E3B260'
                       : '2px solid transparent',
                     outlineOffset: 2,

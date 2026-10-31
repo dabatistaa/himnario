@@ -177,12 +177,18 @@ export function LeccionProjectorPage() {
     getLesson(remote.lessonId).then(setLesson).catch(console.error)
   }, [remote?.lessonId])
 
+  const slides = useMemo(
+    () => lesson && remote ? buildSlides(lesson, remote.config) : [],
+    [lesson, remote?.config]
+  )
+
   // Teclado: flechas + f (igual que proyector de himnos)
   useEffect(() => {
+    const total = slides.length
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') {
         e.preventDefault()
-        setRemote(r => r ? { ...r, slideIdx: Math.min((slides.length || 1) - 1, r.slideIdx + 1) } : r)
+        setRemote(r => r ? { ...r, slideIdx: Math.min(Math.max(0, total - 1), r.slideIdx + 1) } : r)
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') {
         e.preventDefault()
         setRemote(r => r ? { ...r, slideIdx: Math.max(0, r.slideIdx - 1) } : r)
@@ -195,11 +201,6 @@ export function LeccionProjectorPage() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [slides.length])
-
-  const slides = useMemo(
-    () => lesson && remote ? buildSlides(lesson, remote.config) : [],
-    [lesson, remote?.config]
-  )
 
   const handleJoin = () => {
     const code = joinInput.trim().toUpperCase()
