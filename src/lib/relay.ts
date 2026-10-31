@@ -72,6 +72,7 @@ export function initRelay(sala: string) {
 
 function connect() {
   if (!salaId || stopped || !RELAY_WS) return
+  if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) return
   ws = new WebSocket(`${RELAY_WS}/ws?sala=${encodeURIComponent(salaId)}`)
   ws.onopen = () => { if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null } }
   ws.onmessage = ({ data }) => {
