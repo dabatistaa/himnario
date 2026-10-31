@@ -42,8 +42,9 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
   const [settings, setSettings] = useState<Settings>({ ...DEFAULT_SETTINGS })
   const [projLastSeen, setProjLastSeen] = useState<number | null>(null)
   const [relayConnected, setRelayConnected] = useState(false)
-  const [isActive, setIsActive] = useState(true)
-  const isActiveRef = useRef(true)
+  const [isActive, setIsActive] = useState(false)
+  const isActiveRef = useRef(false)
+  const activationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [remoteOpId, setRemoteOpId] = useState<string | null>(null)
   const myId = useRef(Math.random().toString(36).slice(2, 10))
   const hasMounted = useRef(false)
@@ -105,7 +106,18 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
     broadcastState({ num: hymnNum, idx: safeIdx, blank, scale, settings, hymnary }, myId.current)
   }, [hymnNum, safeIdx, blank, scale, settings, hymnary])
 
+  useEffect(() => {
+    activationTimerRef.current = setTimeout(() => {
+      if (!isActiveRef.current) {
+        isActiveRef.current = true
+        setIsActive(true)
+      }
+    }, 1500)
+    return () => { if (activationTimerRef.current) clearTimeout(activationTimerRef.current) }
+  }, [])
+
   const takeControl = useCallback(() => {
+    if (activationTimerRef.current) { clearTimeout(activationTimerRef.current); activationTimerRef.current = null }
     isActiveRef.current = true
     setIsActive(true)
     setRemoteOpId(null)
@@ -126,6 +138,7 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
       } else if (msg.type === 'state') {
         const m = msg as { type: 'state'; operatorId?: string }
         if (m.operatorId && m.operatorId !== myId.current) {
+          if (activationTimerRef.current) { clearTimeout(activationTimerRef.current); activationTimerRef.current = null }
           isActiveRef.current = false
           setIsActive(false)
           setRemoteOpId(m.operatorId)
