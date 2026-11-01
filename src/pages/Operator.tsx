@@ -199,6 +199,18 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
   const firstSlide = useCallback(() => setSlideIdx(0), [])
   const toggleBlank = useCallback(() => setBlank(b => !b), [])
 
+  const bibliaBlankToggleRef = useRef<(() => void) | null>(null)
+  const leccionBlankToggleRef = useRef<(() => void) | null>(null)
+  const [bibliaBlank, setBibliaBlank] = useState(false)
+  const [leccionBlank, setLeccionBlank] = useState(false)
+
+  const currentBlank = tab === 'biblia' ? bibliaBlank : tab === 'leccion' ? leccionBlank : blank
+  const handleToggleBlank = useCallback(() => {
+    if (tab === 'biblia') bibliaBlankToggleRef.current?.()
+    else if (tab === 'leccion') leccionBlankToggleRef.current?.()
+    else toggleBlank()
+  }, [tab, toggleBlank])
+
   const handleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {})
     else document.exitFullscreen()
@@ -438,7 +450,7 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
             <button type="button" onClick={() => setScale(s => Math.max(0.6, +(s - 0.1).toFixed(2)))} aria-label="Letra más pequeña" style={{ ...btnBase, height: 44, minWidth: 44, padding: '0 12px', borderRadius: 10, border: '1px solid #333844', background: '#1A1D24', color: '#E7E8EC', fontSize: 15 }}>A−</button>
             <button type="button" onClick={() => setScale(s => Math.min(1.6, +(s + 0.1).toFixed(2)))} aria-label="Letra más grande" style={{ ...btnBase, height: 44, minWidth: 44, padding: '0 12px', borderRadius: 10, border: '1px solid #333844', background: '#1A1D24', color: '#E7E8EC', fontSize: 19, fontWeight: 700 }}>A+</button>
-            <button type="button" onClick={toggleBlank} aria-pressed={blank} style={{ ...btnBase, height: 44, padding: '0 16px', borderRadius: 10, border: '1px solid #333844', background: blank ? '#E7E8EC' : '#1A1D24', color: blank ? '#111318' : '#E7E8EC', fontSize: 15 }}>Pantalla negra</button>
+            <button type="button" onClick={handleToggleBlank} aria-pressed={currentBlank} style={{ ...btnBase, height: 44, padding: '0 16px', borderRadius: 10, border: '1px solid #333844', background: currentBlank ? '#E7E8EC' : '#1A1D24', color: currentBlank ? '#111318' : '#E7E8EC', fontSize: 15 }}>Pantalla negra</button>
             <button type="button" onClick={openProjector} style={{ ...btnBase, gap: 8, height: 44, padding: '0 18px', borderRadius: 10, border: 0, background: '#E3B260', color: '#1A1408', fontSize: 15, fontWeight: 700 }}>
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9V4h5"/><path d="M20 9V4h-5"/><path d="M4 15v5h5"/><path d="M20 15v5h-5"/></svg>
               Proyectar
@@ -523,8 +535,8 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
       </div>
 
       {/* ── Paneles Lección / Biblia ── */}
-      {tab === 'leccion' && <LeccionOperatorPage embedded />}
-      {tab === 'biblia'  && <BibliaOperatorPage  embedded />}
+      {tab === 'leccion' && <LeccionOperatorPage embedded toggleBlankRef={leccionBlankToggleRef} onBlankChange={setLeccionBlank} />}
+      {tab === 'biblia'  && <BibliaOperatorPage  embedded toggleBlankRef={bibliaBlankToggleRef}  onBlankChange={setBibliaBlank}  />}
 
       {/* ── Layout himnario ── */}
       {(tab === 'smi' || tab === 'juvenil') && (narrow ? (
@@ -602,9 +614,9 @@ export function OperatorPage({ hymnsSmi, hymnsJuvenil }: OperatorPageProps) {
               </button>
             </div>
             {/* Pantalla negra */}
-            <button type="button" onClick={toggleBlank} aria-pressed={blank} style={{ ...btnBase, height: 44, borderRadius: 10, border: '1px solid #333844', background: blank ? '#E7E8EC' : '#1A1D24', color: blank ? '#111318' : '#9AA0AC', fontSize: 14, gap: 8 }}>
+            <button type="button" onClick={handleToggleBlank} aria-pressed={currentBlank} style={{ ...btnBase, height: 44, borderRadius: 10, border: '1px solid #333844', background: currentBlank ? '#E7E8EC' : '#1A1D24', color: currentBlank ? '#111318' : '#9AA0AC', fontSize: 14, gap: 8 }}>
               <span style={{ fontSize: 16 }}>■</span>
-              {blank ? 'Mostrar proyector' : 'Pantalla negra'}
+              {currentBlank ? 'Mostrar proyector' : 'Pantalla negra'}
             </button>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { broadcastBibleState, broadcastBibleHello, onBibleMessage, getSala } from '../lib/syncBible'
 import type { BibleSyncState, BibleVerse } from '../lib/syncBible'
@@ -28,7 +28,11 @@ function buildText(books: BibleBook[], v: BibleVerse): string {
   return verses.join('\n')
 }
 
-export function BibliaOperatorPage({ embedded = false }: { embedded?: boolean }) {
+export function BibliaOperatorPage({ embedded = false, toggleBlankRef, onBlankChange }: {
+  embedded?: boolean
+  toggleBlankRef?: React.MutableRefObject<(() => void) | null>
+  onBlankChange?: (blank: boolean) => void
+}) {
   const [books, setBooks] = useState<BibleBook[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -81,6 +85,17 @@ export function BibliaOperatorPage({ embedded = false }: { embedded?: boolean })
     const t = setInterval(broadcastBibleHello, 3000)
     return () => clearInterval(t)
   }, [])
+
+  // Exponer toggle de blank al padre (cuando está embebido)
+  useEffect(() => {
+    if (!toggleBlankRef) return
+    toggleBlankRef.current = () => setBlank(b => !b)
+    return () => { toggleBlankRef.current = null }
+  }, [toggleBlankRef])
+
+  useEffect(() => {
+    onBlankChange?.(blank)
+  }, [blank, onBlankChange])
 
   const sala = getSala()
   const projUrl = sala

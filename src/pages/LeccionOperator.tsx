@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getCurrentBook, getLessons, getLesson, pickCurrentLesson } from '../services/lessons'
 import {
@@ -53,7 +53,11 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
   )
 }
 
-export function LeccionOperatorPage({ embedded = false }: { embedded?: boolean }) {
+export function LeccionOperatorPage({ embedded = false, toggleBlankRef, onBlankChange }: {
+  embedded?: boolean
+  toggleBlankRef?: React.MutableRefObject<(() => void) | null>
+  onBlankChange?: (blank: boolean) => void
+}) {
   const [book, setBook] = useState<Book | null>(null)
   const [lessons, setLessons] = useState<LessonSummary[]>([])
   const [selectedLessonId, setSelectedLessonId] = useState<string>('')
@@ -134,6 +138,17 @@ export function LeccionOperatorPage({ embedded = false }: { embedded?: boolean }
       }
     })
   }, [])
+
+  // Exponer toggle de blank al padre (cuando está embebido)
+  useEffect(() => {
+    if (!toggleBlankRef) return
+    toggleBlankRef.current = () => setBlank(b => !b)
+    return () => { toggleBlankRef.current = null }
+  }, [toggleBlankRef])
+
+  useEffect(() => {
+    onBlankChange?.(blank)
+  }, [blank, onBlankChange])
 
   const sala = getSala()
   const projUrl = sala
