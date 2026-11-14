@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { getSala } from '../lib/relay'
 
 const RELAY = 'https://himnario-relay.dabatistaa.workers.dev'
-const APP = 'https://himnario.impartela.org'
+const APP = 'https://proyector.impartela.org'
 const SALA = getSala() ?? 'TU-SALA'
 
 function CopyBtn({ text, label = 'Copiar' }: { text: string; label?: string }) {
